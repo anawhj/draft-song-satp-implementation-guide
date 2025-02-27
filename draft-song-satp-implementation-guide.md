@@ -21,8 +21,8 @@ docname: draft-song-satp-implementation-guide-latest
 submissiontype: IETF
 category: info
 ipr: trust200902
-area: Applications and Real-Time
-workgroup: Secure Asset Transfer Protocol
+area: ""
+workgroup: "Secure Asset Transfer Protocol"
 date: March 2025
 v: 3
 stream: IETF
@@ -33,12 +33,12 @@ keyword:
 consensus: true
 
 venue:
-  group: Secure Asset Transfer Protocol
-  type: Working Group
-  mail: sat@ietf.org
-  arch: https://mailarchive.ietf.org/arch/browse/sat/
-  github: anawhj/draft-song-satp-implementation-guide
-  latest: https://anawhj.github.io/draft-song-satp-implementation-guide/draft-song-satp-implementation-guide.html
+  group: "Secure Asset Transfer Protocol"
+  type: ""
+  mail: "sat@ietf.org"
+  arch: "https://mailarchive.ietf.org/arch/browse/sat/"
+  github: "anawhj/draft-song-satp-implementation-guide"
+  latest: "https://anawhj.github.io/draft-song-satp-implementation-guide/draft-song-satp-implementation-guide.html"
 
 author:
  -
