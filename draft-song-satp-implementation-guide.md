@@ -119,12 +119,6 @@ The existing SATP core documents ([SATcore], [SATarch]) provides most of the key
 
                 Figure 1. Scope of the SATP implementation
 
-    
-
-
-
-{: #satp-fig-overview}
-
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
