@@ -1,5 +1,4 @@
 ---
-
 stand_alone: yes
 pi:
   rfcedstyle: yes
@@ -18,19 +17,18 @@ pi:
 title: Secure Asset Transfer Protocol (SATP) Implementation Guide
 abbrev: SATP Implementation Guide
 docname: draft-song-satp-implementation-guide-latest
-submissiontype: IETF
 category: info
 ipr: trust200902
-area: ""
-workgroup: "Secure Asset Transfer Protocol"
-date: March 2025
+area: Applications and Real-Time
+workgroup: Secure Asset Transfer Protocol
+date: 3 March 2025
 v: 3
 stream: IETF
 keyword:
- - Blockchain
- - Distributed ledger
+ - Gateway
+ - Digital asset network
  - Asset transfer
-consensus: true
+consensus: false
 
 venue:
   group: "Secure Asset Transfer Protocol"
@@ -57,76 +55,103 @@ author:
     organization: MIT
     email: hardjono@mit.edu
 
-normative:
-  JWT: RFC7519
-  REQ-LEVEL: RFC2119
-
 informative:
-  NIST:
+  SATcore:
     author:
-    - ins: D. Yaga
-    - ins: P. Mell
-    - ins: N. Roby
-    - ins: K. Scarfone
-    date: October 2018
-    target: https://doi.org/10.6028/NIST.IR.8202
-    title: NIST Blockchain Technology Overview (NISTR-8202)
-
-  MICA:
-    author:
-    - ins: European Commission
-    date: June 2023
-    target: https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica
-    title: EU Directive on Markets in Crypto-Assets Regulation (MiCA)
-
-  ARCH:
+    - ins: M. Hargreaves
+    - ins: T. Hardjono
+    - ins: R. Belchior
+    - ins: V. Ramakrishna
+    date: Jan 2025
+    target: https://datatracker.ietf.org/doc/draft-ietf-satp-core/
+    title: Secure Asset Transfer Protocol (SATP) Core
+  SATarch:
     author:
     - ins: T. Hardjono
     - ins: M. Hargreaves
     - ins: N. Smith
     - ins: V. Ramakrishna
-    date: June 2024
+    date: Dec 2024
     target: https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/
     title: Secure Asset Transfer (SAT) Interoperability Architecture
 
-  RFC5939:
-    author:
-    - ins: F. Andreasen
-    date: September 2010
-    target: https://www.rfc-editor.org/info/rfc5939
-    title: Session Description Protocol (SDP) Capability Negotiation
-
-  RFC9334:
-    author:
-    - ins: H. Birkholz
-    - ins: D. Thaler
-    - ins: M. Richardson
-    - ins: N. Smith
-    - ins: W. Pan
-    date: January 2023
-    target: https://www.rfc-editor.org/info/rfc9334
-    title: Remote Attestation Procedures Architecture (RATS)
-
 --- abstract
 
-This memo describes the Secure Asset Transfer (SAT) Implementation Guide. SAT is a protocol operating between two gateways that conducts the transfer of a digital asset from one gateway to another, each representing their corresponding digital asset networks. The protocol establishes a secure channel between the endpoints and implements a 2-phase commit (2PC) to ensure the properties of transfer atomicity, consistency, isolation and durability. The implementation guide provides how to design and utilize the SATP protocol standards.
+This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards.
+
+(Note. the initial draft (00) is submitted for a brief review regarding the document's direction by SATP WG members during IETF 12 in Bangkok, Mar 2025)
 
 --- middle
 
 # Introduction
 
-TODO Introduction
+{: #introduction-doc}
 
+This document proposes implementation guidance from the perspective of developers of peer gateways and digital asset networks.
+
+The Secure Asset Transfer Protocol (SATP) facilitates communication between peer gateways and other entities such as digital asset networks and client applications. A digital asset network can be connected to multiple peer gateways to enable asset transfers while ensuring interoperability. To ensure consistency across multiple peer gateways, appropriate guidelines are necessary.
+
+Peer gateways must implement a secure asset transfer mechanism that meets essential requirements related to atomicity,
+consistency, isolation, and durability (ACID). Security and privacy are also critical requirements. Therefore, this document involves several considerations beyond the SATP interface.
+
+The existing SATP core documents ([SATcore], [SATarch]) provides most of the key implementation guidelines, but this document offers a more elaborated description of each phase within peer gateways and digital asset networks.
+
+              Originator                         Beneficiary
+           (Origin network)                 (Destination network)
+                   |                                   |
+      +------------------------+          +------------------------+
+      |         Client         |          |         Client         |
+      |       Application      |          |       Application      |
+      |         (App1)         |          |         (App2)         |
+      +------------------------+          +------------------------+
+           |              |                    |              |
+           V              V                    V              V
+      +---------+    +---------+          +---------+    +---------+
+      |         |    |         |          |         |    |         |
+      |         |    |         |          |         |    |         |
+      | Digital |    |         |          |         |    | Digital |
+      |  Asset  |    | Gateway |          | Gateway |    |  Asset  |
+      | Network |<-->|   GW1   | <------> |   GW2   |    | Network |
+      |   NW1   |    |         |          |         |    |   NW2   |
+      |         |    |         |          |         |    |         |
+      |         |    |         |          |         |    |         |
+      +---------+    +---------+          +---------+    +---------+
+
+                Figure 1. Scope of the SATP implementation
+
+    
+
+
+
+{: #satp-fig-overview}
 
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
 
+# Overview of Architecture
+
+TBA
+
+# Gateway Implementation
+
+TBA
+
+# Network Implementation
+
+TBA
+
+# Implementation Report
+
+TBA
 
 # Security Considerations
 
-TODO Security
+TBA
 
+# Privacy Considerations
+
+TBA
 
 # IANA Considerations
 

@@ -1,0 +1,280 @@
+
+
+
+
+Secure Asset Transfer Protocol                                   H. Song
+Internet-Draft                                      Seoul National Univ.
+Intended status: Informational                                Y.-G. Hong
+Expires: 4 September 2025                                  Daejeon Univ.
+                                                             T. Hardjono
+                                                                     MIT
+                                                              March 2025
+
+
+       Secure Asset Transfer Protocol (SATP) Implementation Guide
+              draft-song-satp-implementation-guide-latest
+
+Abstract
+
+   This memo provides guidelines to developers of gateway systems,
+   digital asset networks and client applications for the Secure Asset
+   Transfer Protocol (SATP).  Multiple gateways can represent the same
+   digital asset network following the SATP standards, which necessitate
+   basic implementation guidelines as outlined in this document.  It
+   also serves as an introduction to the SATP processing workflow for
+   those new to the SATP standards.
+
+   (Note. the initial draft (00) is submitted for a brief review
+   regarding the document's direction by SATP WG members during IETF 12
+   in Bangkok, Mar 2025)
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   The latest revision of this draft can be found at
+   https://anawhj.github.io/draft-song-satp-implementation-guide/draft-
+   song-satp-implementation-guide.html.  Status information for this
+   document may be found at https://datatracker.ietf.org/doc/draft-song-
+   satp-implementation-guide/.
+
+   Discussion of this document takes place on the Secure Asset Transfer
+   Protocol Working Group mailing list (mailto:sat@ietf.org), which is
+   archived at https://mailarchive.ietf.org/arch/browse/sat/.  Subscribe
+   at https://www.ietf.org/mailman/listinfo/sat/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/anawhj/draft-song-satp-implementation-guide.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+
+
+Song, et al.            Expires 4 September 2025                [Page 1]
+
+Internet-Draft          SATP Implementation Guide             March 2025
+
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 2 September 2025.
+
+Copyright Notice
+
+   Copyright (c) 2025 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.  Code Components
+   extracted from this document must include Revised BSD License text as
+   described in Section 4.e of the Trust Legal Provisions and are
+   provided without warranty as described in the Revised BSD License.
+
+Table of Contents
+
+   1.  Introduction  . . . . . . . . . . . . . . . . . . . . . . . .   2
+   2.  Conventions and Definitions . . . . . . . . . . . . . . . . .   3
+   3.  Overview of Architecture  . . . . . . . . . . . . . . . . . .   4
+   4.  Gateway Implementation  . . . . . . . . . . . . . . . . . . .   4
+   5.  Network Implementation  . . . . . . . . . . . . . . . . . . .   4
+   6.  Implementation Report . . . . . . . . . . . . . . . . . . . .   4
+   7.  Security Considerations . . . . . . . . . . . . . . . . . . .   4
+   8.  Privacy Considerations  . . . . . . . . . . . . . . . . . . .   4
+   9.  IANA Considerations . . . . . . . . . . . . . . . . . . . . .   4
+   10. References  . . . . . . . . . . . . . . . . . . . . . . . . .   4
+     10.1.  Normative References . . . . . . . . . . . . . . . . . .   4
+     10.2.  Informative References . . . . . . . . . . . . . . . . .   4
+   Acknowledgments . . . . . . . . . . . . . . . . . . . . . . . . .   5
+   Authors' Addresses  . . . . . . . . . . . . . . . . . . . . . . .   5
+
+1.  Introduction
+
+   This document proposes implementation guidance from the perspective
+   of developers of peer gateways and digital asset networks.
+
+
+
+
+Song, et al.            Expires 4 September 2025                [Page 2]
+
+Internet-Draft          SATP Implementation Guide             March 2025
+
+
+   The Secure Asset Transfer Protocol (SATP) facilitates communication
+   between peer gateways and other entities such as digital asset
+   networks and client applications.  A digital asset network can be
+   connected to multiple peer gateways to enable asset transfers while
+   ensuring interoperability.  To ensure consistency across multiple
+   peer gateways, appropriate guidelines are necessary.
+
+   Peer gateways must implement a secure asset transfer mechanism that
+   meets essential requirements related to atomicity, consistency,
+   isolation, and durability (ACID).  Security and privacy are also
+   critical requirements.  Therefore, this document involves several
+   considerations beyond the SATP interface.
+
+   The existing SATP core documents ([SATcore], [SATarch]) provides most
+   of the key implementation guidelines, but this document offers a more
+   elaborated description of each phase within peer gateways and digital
+   asset networks.
+
+             Originator                         Beneficiary
+          (Origin network)                 (Destination network)
+                  |                                   |
+     +------------------------+          +------------------------+
+     |         Client         |          |         Client         |
+     |       Application      |          |       Application      |
+     |         (App1)         |          |         (App2)         |
+     +------------------------+          +------------------------+
+          |              |                    |              |
+          V              V                    V              V
+     +---------+    +---------+          +---------+    +---------+
+     |         |    |         |          |         |    |         |
+     |         |    |         |          |         |    |         |
+     | Digital |    |         |          |         |    | Digital |
+     |  Asset  |    | Gateway |          | Gateway |    |  Asset  |
+     | Network |<-->|   GW1   | <------> |   GW2   |    | Network |
+     |   NW1   |    |         |          |         |    |   NW2   |
+     |         |    |         |          |         |    |         |
+     |         |    |         |          |         |    |         |
+     +---------+    +---------+          +---------+    +---------+
+
+               Figure 1. Scope of the SATP implementation
+
+2.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+
+
+Song, et al.            Expires 4 September 2025                [Page 3]
+
+Internet-Draft          SATP Implementation Guide             March 2025
+
+
+3.  Overview of Architecture
+
+   TBA
+
+4.  Gateway Implementation
+
+   TBA
+
+5.  Network Implementation
+
+   TBA
+
+6.  Implementation Report
+
+   TBA
+
+7.  Security Considerations
+
+   TBA
+
+8.  Privacy Considerations
+
+   TBA
+
+9.  IANA Considerations
+
+   There are no IANA considerations related to this document.
+
+10.  References
+
+10.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+10.2.  Informative References
+
+   [SATarch]  Hardjono, T., Hargreaves, M., Smith, N., and V.
+              Ramakrishna, "Secure Asset Transfer (SAT) Interoperability
+              Architecture", December 2024,
+              <https://datatracker.ietf.org/doc/draft-ietf-satp-
+              architecture/>.
+
+
+
+Song, et al.            Expires 4 September 2025                [Page 4]
+
+Internet-Draft          SATP Implementation Guide             March 2025
+
+
+   [SATcore]  Hargreaves, M., Hardjono, T., Belchior, R., and V.
+              Ramakrishna, "Secure Asset Transfer Protocol (SATP) Core",
+              January 2025,
+              <https://datatracker.ietf.org/doc/draft-ietf-satp-core/>.
+
+Acknowledgments
+
+   TBA
+
+Authors' Addresses
+
+   Hyojin Song
+   Seoul National Univ.
+   Email: fun@snu.ac.kr
+
+
+   Yong-Geun Hong
+   Daejeon Univ.
+   Email: yonggeun.hong@gmail.com
+
+
+   Thomas Hardjono
+   MIT
+   Email: hardjono@mit.edu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Song, et al.            Expires 4 September 2025                [Page 5]
