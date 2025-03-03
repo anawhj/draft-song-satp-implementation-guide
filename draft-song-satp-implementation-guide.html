@@ -9,15 +9,16 @@
 <meta content="Yong-Geun Hong" name="author">
 <meta content="Thomas Hardjono" name="author">
 <meta content="
-       This memo describes the Secure Asset Transfer (SAT) Implementation Guide. SAT is a protocol operating between two gateways that conducts the transfer of a digital asset from one gateway to another, each representing their corresponding digital asset networks. The protocol establishes a secure channel between the endpoints and implements a 2-phase commit (2PC) to ensure the properties of transfer atomicity, consistency, isolation and durability. The implementation guide provides how to design and utilize the SATP protocol standards. 
+       This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards. 
+       (Note. the initial draft (00) is submitted for a brief review regarding the document's direction by SATP WG members during IETF 12 in Bangkok, Mar 2025) 
     " name="description">
-<meta content="xml2rfc 3.27.0" name="generator">
-<meta content="Blockchain" name="keyword">
-<meta content="Distributed ledger" name="keyword">
+<meta content="xml2rfc 3.28.0" name="generator">
+<meta content="Gateway" name="keyword">
+<meta content="Digital asset network" name="keyword">
 <meta content="Asset transfer" name="keyword">
 <meta content="draft-song-satp-implementation-guide-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.27.0
+  xml2rfc 3.28.0
     Python 3.12.9
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
@@ -1052,7 +1053,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </tr></thead>
 <tfoot><tr>
 <td class="left">Song, et al.</td>
-<td class="center">Expires 6 September 2025</td>
+<td class="center">Expires 4 September 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1070,7 +1071,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-09-06">6 September 2025</time></dd>
+<dd class="expires"><time datetime="2025-09-04">4 September 2025</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1091,7 +1092,8 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">Secure Asset Transfer Protocol (SATP) Implementation Guide</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This memo describes the Secure Asset Transfer (SAT) Implementation Guide. SAT is a protocol operating between two gateways that conducts the transfer of a digital asset from one gateway to another, each representing their corresponding digital asset networks. The protocol establishes a secure channel between the endpoints and implements a 2-phase commit (2PC) to ensure the properties of transfer atomicity, consistency, isolation and durability. The implementation guide provides how to design and utilize the SATP protocol standards.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2">(Note. the initial draft (00) is submitted for a brief review regarding the document's direction by SATP WG members during IETF 12 in Bangkok, Mar 2025)<a href="#section-abstract-2" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1103,7 +1105,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-song-satp-implementation-guide/">https://datatracker.ietf.org/doc/draft-song-satp-implementation-guide/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
 <p id="section-note.1-3">
         Discussion of this document takes place on the
-        Secure Asset Transfer Protocol Working Group mailing list (<span><a href="mailto:sat@ietf.org">mailto:sat@ietf.org</a></span>),
+        Secure Asset Transfer Protocol  mailing list (<span><a href="mailto:sat@ietf.org">mailto:sat@ietf.org</a></span>),
         which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/sat/">https://mailarchive.ietf.org/arch/browse/sat/</a></span>.
         Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/sat/">https://www.ietf.org/mailman/listinfo/sat/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
 <p id="section-note.1-4">Source for this draft and an issue tracker can be found at
@@ -1164,27 +1166,42 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
-            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-overview-of-architecture" class="internal xref">Overview of Architecture</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-gateway-implementation" class="internal xref">Gateway Implementation</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
-            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-references" class="internal xref">References</a></p>
-<ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
-                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-network-implementation" class="internal xref">Network Implementation</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
-                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-implementation-report" class="internal xref">Implementation Report</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
 </li>
             </ul>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
-            <p id="section-toc.1-1.6.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
 </li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1195,7 +1212,39 @@ svg :is([fill="white"], [fill^="#fff"]) {
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">TODO Introduction<a href="#section-1-1" class="pilcrow">¶</a></p>
+<div id="introduction-doc">
+<p id="section-1-1">This document proposes implementation guidance from the perspective of developers of peer gateways and digital asset networks.<a href="#section-1-1" class="pilcrow">¶</a></p>
+</div>
+<p id="section-1-2">The Secure Asset Transfer Protocol (SATP) facilitates communication between peer gateways and other entities such as digital asset networks and client applications. A digital asset network can be connected to multiple peer gateways to enable asset transfers while ensuring interoperability. To ensure consistency across multiple peer gateways, appropriate guidelines are necessary.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">Peer gateways must implement a secure asset transfer mechanism that meets essential requirements related to atomicity,
+consistency, isolation, and durability (ACID). Security and privacy are also critical requirements. Therefore, this document involves several considerations beyond the SATP interface.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">The existing SATP core documents (<span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>, <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span>) provides most of the key implementation guidelines, but this document offers a more elaborated description of each phase within peer gateways and digital asset networks.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-1-5">
+<pre>
+          Originator                         Beneficiary
+       (Origin network)                 (Destination network)
+               |                                   |
+  +------------------------+          +------------------------+
+  |         Client         |          |         Client         |
+  |       Application      |          |       Application      |
+  |         (App1)         |          |         (App2)         |
+  +------------------------+          +------------------------+
+       |              |                    |              |
+       V              V                    V              V
+  +---------+    +---------+          +---------+    +---------+
+  |         |    |         |          |         |    |         |
+  |         |    |         |          |         |    |         |
+  | Digital |    |         |          |         |    | Digital |
+  |  Asset  |    | Gateway |          | Gateway |    |  Asset  |
+  | Network |&lt;--&gt;|   GW1   | &lt;------&gt; |   GW2   |    | Network |
+  |   NW1   |    |         |          |         |    |   NW2   |
+  |         |    |         |          |         |    |         |
+  |         |    |         |          |         |    |         |
+  +---------+    +---------+          +---------+    +---------+
+
+            Figure 1. Scope of the SATP implementation
+</pre><a href="#section-1-5" class="pilcrow">¶</a>
+</div>
 </section>
 </div>
 <div id="conventions-and-definitions">
@@ -1209,41 +1258,73 @@ described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</s
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="security-considerations">
+<div id="overview-of-architecture">
 <section id="section-3">
-      <h2 id="name-security-considerations">
-<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      <h2 id="name-overview-of-architecture">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview-of-architecture" class="section-name selfRef">Overview of Architecture</a>
       </h2>
-<p id="section-3-1">TODO Security<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-1">TBA<a href="#section-3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="gateway-implementation">
+<section id="section-4">
+      <h2 id="name-gateway-implementation">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-gateway-implementation" class="section-name selfRef">Gateway Implementation</a>
+      </h2>
+<p id="section-4-1">TBA<a href="#section-4-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="network-implementation">
+<section id="section-5">
+      <h2 id="name-network-implementation">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-network-implementation" class="section-name selfRef">Network Implementation</a>
+      </h2>
+<p id="section-5-1">TBA<a href="#section-5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="implementation-report">
+<section id="section-6">
+      <h2 id="name-implementation-report">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-implementation-report" class="section-name selfRef">Implementation Report</a>
+      </h2>
+<p id="section-6-1">TBA<a href="#section-6-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-7">
+      <h2 id="name-security-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-7-1">TBA<a href="#section-7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="privacy-considerations">
+<section id="section-8">
+      <h2 id="name-privacy-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-8-1">TBA<a href="#section-8-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-4">
+<section id="section-9">
       <h2 id="name-iana-considerations">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-4-1">There are no IANA considerations related to this document.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-9-1">There are no IANA considerations related to this document.<a href="#section-9-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-combined-references">
-<section id="section-5">
+<section id="section-10">
       <h2 id="name-references">
-<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-5.1">
+<section id="section-10.1">
         <h3 id="name-normative-references">
-<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
-<dt id="JWT">[JWT]</dt>
-        <dd>
-<span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Bradley, J.</span>, and <span class="refAuthor">N. Sakimura</span>, <span class="refTitle">"JSON Web Token (JWT)"</span>, <span class="seriesInfo">RFC 7519</span>, <span class="seriesInfo">DOI 10.17487/RFC7519</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7519">https://www.rfc-editor.org/rfc/rfc7519</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="REQ-LEVEL">[REQ-LEVEL]</dt>
-        <dd>
-<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
         <dd>
 <span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
@@ -1256,30 +1337,18 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-5.2">
+<section id="section-10.2">
         <h3 id="name-informative-references">
-<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
-<dt id="ARCH">[ARCH]</dt>
+<dt id="SATarch">[SATarch]</dt>
         <dd>
-<span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Smith, N.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer (SAT) Interoperability Architecture"</span>, <time datetime="2024-06" class="refDate">June 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/">https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/</a>&gt;</span>. </dd>
+<span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Smith, N.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer (SAT) Interoperability Architecture"</span>, <time datetime="2024-12" class="refDate">December 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/">https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="MICA">[MICA]</dt>
-        <dd>
-<span class="refAuthor">European Commission</span>, <span class="refTitle">"EU Directive on Markets in Crypto-Assets Regulation (MiCA)"</span>, <time datetime="2023-06" class="refDate">June 2023</time>, <span>&lt;<a href="https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica">https://www.esma.europa.eu/esmas-activities/digital-finance-and-innovation/markets-crypto-assets-regulation-mica</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="NIST">[NIST]</dt>
-        <dd>
-<span class="refAuthor">Yaga, D.</span>, <span class="refAuthor">Mell, P.</span>, <span class="refAuthor">Roby, N.</span>, and <span class="refAuthor">K. Scarfone</span>, <span class="refTitle">"NIST Blockchain Technology Overview (NISTR-8202)"</span>, <time datetime="2018-10" class="refDate">October 2018</time>, <span>&lt;<a href="https://doi.org/10.6028/NIST.IR.8202">https://doi.org/10.6028/NIST.IR.8202</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC5939">[RFC5939]</dt>
-        <dd>
-<span class="refAuthor">Andreasen, F.</span>, <span class="refTitle">"Session Description Protocol (SDP) Capability Negotiation"</span>, <time datetime="2010-09" class="refDate">September 2010</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc5939">https://www.rfc-editor.org/info/rfc5939</a>&gt;</span>. </dd>
-<dd class="break"></dd>
-<dt id="RFC9334">[RFC9334]</dt>
+<dt id="SATcore">[SATcore]</dt>
       <dd>
-<span class="refAuthor">Birkholz, H.</span>, <span class="refAuthor">Thaler, D.</span>, <span class="refAuthor">Richardson, M.</span>, <span class="refAuthor">Smith, N.</span>, and <span class="refAuthor">W. Pan</span>, <span class="refTitle">"Remote Attestation Procedures Architecture (RATS)"</span>, <time datetime="2023-01" class="refDate">January 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/info/rfc9334">https://www.rfc-editor.org/info/rfc9334</a>&gt;</span>. </dd>
+<span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Belchior, R.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer Protocol (SATP) Core"</span>, <time datetime="2025-01" class="refDate">January 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-satp-core/">https://datatracker.ietf.org/doc/draft-ietf-satp-core/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
