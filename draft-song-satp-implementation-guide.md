@@ -21,7 +21,7 @@ category: info
 ipr: trust200902
 area: Applications and Real-Time
 workgroup: Secure Asset Transfer Protocol
-date: 3 March 2025
+date: 7 July 2025
 v: 3
 stream: IETF
 keyword:
@@ -50,6 +50,11 @@ author:
     organization: Daejeon Univ.
     email: yonggeun.hong@gmail.com
  -
+    ins: G. Jeong
+    fullname: GukSik Jeong
+    organization: TTA
+    email: jhsigi@tta.or.kr
+ -
     ins: T. Hardjono
     name: Thomas Hardjono
     organization: MIT
@@ -62,7 +67,7 @@ informative:
     - ins: T. Hardjono
     - ins: R. Belchior
     - ins: V. Ramakrishna
-    date: Jan 2025
+    date: Jul 2025
     target: https://datatracker.ietf.org/doc/draft-ietf-satp-core/
     title: Secure Asset Transfer Protocol (SATP) Core
   SATarch:
@@ -71,15 +76,13 @@ informative:
     - ins: M. Hargreaves
     - ins: N. Smith
     - ins: V. Ramakrishna
-    date: Dec 2024
+    date: Jun 2025
     target: https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/
     title: Secure Asset Transfer (SAT) Interoperability Architecture
 
 --- abstract
 
 This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards.
-
-(Note. the initial draft (00) is submitted for a brief review regarding the document's direction by SATP WG members during IETF 12 in Bangkok, Mar 2025)
 
 --- middle
 
@@ -127,23 +130,7 @@ The existing SATP core documents ([SATcore], [SATarch]) provides most of the key
 
 TBA
 
-# Gateway Implementation
-
-TBA
-
-# Network Implementation
-
-TBA
-
-# Implementation Report
-
-TBA
-
 # Security Considerations
-
-TBA
-
-# Privacy Considerations
 
 TBA
 
