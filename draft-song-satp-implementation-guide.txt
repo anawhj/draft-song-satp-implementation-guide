@@ -198,7 +198,7 @@ Authors' Addresses
 
    GukSik Jeong
    TTA
-   Email: jhsigi@tta.or.kr
+   Email: jgsigi@tta.or.kr
 
 
    Thomas Hardjono
