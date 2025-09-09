@@ -53,7 +53,7 @@ author:
     ins: G. Jeong
     fullname: GukSik Jeong
     organization: TTA
-    email: jhsigi@tta.or.kr
+    email: jgsigi@tta.or.kr
  -
     ins: T. Hardjono
     name: Thomas Hardjono
