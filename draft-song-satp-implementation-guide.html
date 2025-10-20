@@ -10,27 +10,26 @@
 <meta content="GukSik Jeong" name="author">
 <meta content="Thomas Hardjono" name="author">
 <meta content="
-       This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards. 
+       This memo provides implementation guidelines for the Secure Asset Transfer Protocol (SATP). It is intended for developers of SATP gateway and digital asset networks they represent. This document also clarifies the core SATP processing workflow and offers recommendations to ensure interoperable implementations, particularly in environments where multiple gateways may represent the same network. 
     " name="description">
-<meta content="xml2rfc 3.30.1" name="generator">
+<meta content="xml2rfc 3.31.0" name="generator">
 <meta content="Gateway" name="keyword">
 <meta content="Digital asset network" name="keyword">
 <meta content="Asset transfer" name="keyword">
 <meta content="draft-song-satp-implementation-guide-latest" name="ietf.draft">
 <!-- Generator version information:
-  xml2rfc 3.30.1
-    Python 3.12.11
+  xml2rfc 3.31.0
+    Python 3.12.12
     ConfigArgParse 1.7
     google-i18n-address 3.1.1
     intervaltree 3.1.0
     Jinja2 3.1.6
     lxml 5.3.1
-    platformdirs 4.4.0
+    platformdirs 4.5.0
     pycountry 24.6.1
     PyYAML 6.0.2
     requests 2.32.5
-    setuptools 80.9.0
-    wcwidth 0.2.13
+    wcwidth 0.2.14
 -->
 <link href="draft-song-satp-implementation-guide.xml" rel="alternate" type="application/rfc+xml">
 <link href="#copyright" rel="license">
@@ -1049,11 +1048,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">SATP Implementation Guide</td>
-<td class="right">July 2025</td>
+<td class="right">October 2025</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Song, et al.</td>
-<td class="center">Expires 1 February 2026</td>
+<td class="center">Expires 23 April 2026</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1066,12 +1065,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-song-satp-implementation-guide-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2025-07" class="published">July 2025</time>
+<time datetime="2025-10" class="published">October 2025</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2026-02-01">1 February 2026</time></dd>
+<dd class="expires"><time datetime="2026-04-23">23 April 2026</time></dd>
 <dt class="label-authors">Authors:</dt>
 <dd class="authors">
 <div class="author">
@@ -1096,7 +1095,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">Secure Asset Transfer Protocol (SATP) Implementation Guide</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This memo provides guidelines to developers of gateway systems, digital asset networks and client applications for the Secure Asset Transfer Protocol (SATP). Multiple gateways can represent the same digital asset network following the SATP standards, which necessitate basic implementation guidelines as outlined in this document. It also serves as an introduction to the SATP processing workflow for those new to the SATP standards.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This memo provides implementation guidelines for the Secure Asset Transfer Protocol (SATP). It is intended for developers of SATP gateway and digital asset networks they represent. This document also clarifies the core SATP processing workflow and offers recommendations to ensure interoperable implementations, particularly in environments where multiple gateways may represent the same network.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-about-this-document">
@@ -1133,7 +1132,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 2 January 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 4 April 2026.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1169,30 +1168,70 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
-            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-overview-of-architecture" class="internal xref">Overview of Architecture</a></p>
+            <p id="section-toc.1-1.3.1" class="keepWithNext"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
-            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
-            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
-</li>
-          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
-            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-references" class="internal xref">References</a></p>
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-core-protocol-flows" class="internal xref">Core Protocol Flows</a></p>
 <ul class="compact toc ulBare ulEmpty">
-<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
-                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-use-case-1-simple-asset-tra" class="internal xref">Use Case 1: Simple Asset Transfer (Successful)</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
-                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-use-case-2-transfer-with-pi" class="internal xref">Use Case 2: Transfer with PII Compliance (Successful)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-use-case-3-transfer-rejecti" class="internal xref">Use Case 3: Transfer Rejection (Rollback)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-use-case-4-multi-hop-interm" class="internal xref">Use Case 4: Multi-Hop (Intermediary) Transfer</a></p>
 </li>
             </ul>
 </li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-data-model-and-payload" class="internal xref">Data Model and Payload</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-gateway-identifiers" class="internal xref">Gateway Identifiers</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-example-payload-transferreq" class="internal xref">Example Payload: TransferRequest (JSON)</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-cbor-representation" class="internal xref">CBOR Representation</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-interoperability-profiles" class="internal xref">Interoperability Profiles</a></p>
+</li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
-            <p id="section-toc.1-1.7.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-open-sources-and-test-tooli" class="internal xref">Open Sources and Test Tooling</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
-            <p id="section-toc.1-1.8.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-securuity-considerations" class="internal xref">Securuity Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#section-11.1" class="auto internal xref">11.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#section-11.2" class="auto internal xref">11.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-A" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
 </li>
         </ul>
 </nav>
@@ -1204,13 +1243,15 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
 <div id="introduction-doc">
-<p id="section-1-1">This document proposes implementation guidance from the perspective of developers of peer gateways and digital asset networks.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-1">(Note: SATP core and architecture drafts are under progress of RFC publication as of October 2025, so major updates to this guide are expected following their RFC publication and new rechartering.)<a href="#section-1-1" class="pilcrow">¶</a></p>
 </div>
-<p id="section-1-2">The Secure Asset Transfer Protocol (SATP) facilitates communication between peer gateways and other entities such as digital asset networks and client applications. A digital asset network can be connected to multiple peer gateways to enable asset transfers while ensuring interoperability. To ensure consistency across multiple peer gateways, appropriate guidelines are necessary.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">Peer gateways must implement a secure asset transfer mechanism that meets essential requirements related to atomicity,
-consistency, isolation, and durability (ACID). Security and privacy are also critical requirements. Therefore, this document involves several considerations beyond the SATP interface.<a href="#section-1-3" class="pilcrow">¶</a></p>
-<p id="section-1-4">The existing SATP core documents (<span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>, <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span>) provides most of the key implementation guidelines, but this document offers a more elaborated description of each phase within peer gateways and digital asset networks.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-1-5">
+<p id="section-1-2">The Secure Asset Transfer Protocol (SATP) provides a standardized mechanism for the secure and reliable transfer of digital assets across different asset networks. The protocol's primary scope is to define the messages and protocol flows for communication between peer gateways. In the SATP model, each gateway acts as a trusted representative for its respective network, managing the outbound (locking/burning) and inbound (unlocking/minting) transfer of assets.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">A fundamental requirement for any cross-network value transfer is reliability. SATP is explicitly designed to provide transactional guarantees, ensuring that the ACID properties (Atomicity, Consistency, Isolation, and Durability) are maintained. The protocol flow, often leveraging a 2-Phase Commit (2PC) pattern, ensures that a transfer operation either completes successfully on both the origin and destination networks or is safely rolled back. This prevents critical failure states, such as the loss of an asset or its unintentional duplication.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">This document, the "SATP Implementation Guide," serves as a non-normative companion to the core protocol specifications. Its purpose is to provide practical implementation guidance for SATP gateway developers and architects. It does not introduce any new normative requirements but instead clarifies the existing ones, outlines best practices, and provides concrete examples to aid in building secure, compliant, and interoperable SATP solutions.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">All guidance provided herein is based on the normative definitions found in the "Secure Asset Transfer Protocol (SATP) Core" <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> and the "Secure Asset Transfer (SAT) Interoperability Architecture" <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span> documents. Implementers are encouraged to consult those core specifications for all formal requirements, data models, and protocol state definitions. This guide should be used as a supplementary resource to understand how those normative requirements may be practically applied.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">This guide elaborates on the abstract protocol by detailing common implementation scenarios. It provides concrete examples for core protocol flows, recommendations for payload structures, and best practices for critical areas such as security and privacy. Specific attention is given to topics like key management, payload encryption (JWE) for sensitive compliance data, and mitigating protocol-level attacks.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">The target audience for this document includes system architects designing gateway infrastructure, software engineers developing SATP client and server logic, and security professionals responsible for auditing and securing the implementation. This guide may also serve as a technical introduction for parties seeking to understand the practical workflow of the protocol beyond the abstract specification.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-1-8">
 <pre>
           Originator                         Beneficiary
        (Origin network)                 (Destination network)
@@ -1234,7 +1275,7 @@ consistency, isolation, and durability (ACID). Security and privacy are also cri
   +---------+    +---------+          +---------+    +---------+
 
             Figure 1. Scope of the SATP implementation
-</pre><a href="#section-1-5" class="pilcrow">¶</a>
+</pre><a href="#section-1-8" class="pilcrow">¶</a>
 </div>
 </section>
 </div>
@@ -1249,39 +1290,266 @@ described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</s
 appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="overview-of-architecture">
+<div id="terminology">
 <section id="section-3">
-      <h2 id="name-overview-of-architecture">
-<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-overview-of-architecture" class="section-name selfRef">Overview of Architecture</a>
+      <h2 id="name-terminology">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
       </h2>
-<p id="section-3-1">TBA<a href="#section-3-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3-1.1">
+          <p id="section-3-1.1.1">SATP (Secure Asset Transfer Protocol): A protocol that defines the communication flow and messages between peer gateways to execute the secure transfer of a digital asset from one network to another.<a href="#section-3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.2">
+          <p id="section-3-1.2.1">Gateway: A software component that acts as a representative for a Digital Asset Network. It implements the SATP and manages the locking, unlocking, burning, or minting of assets on its represented network.<a href="#section-3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.3">
+          <p id="section-3-1.3.1">Originator Gateway: The gateway that initiates an asset transfer request on behalf of the asset sender.<a href="#section-3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.4">
+          <p id="section-3-1.4.1">Beneficiary Gateway: The gateway that receives the asset transfer request on behalf of the asset recipient.<a href="#section-3-1.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.5">
+          <p id="section-3-1.5.1">Intermediary Gateway: An optional gateway that participates in a multi-hop transfer, acting as both a Beneficiary (to the preceding gateway) and an Originator (to the subsequent gateway).<a href="#section-3-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.6">
+          <p id="section-3-1.6.1">Digital Asset: A digital representation of value that is being transferred via SATP (e.g., a cryptocurrency, token, stablecoin, or NFT).<a href="#section-3-1.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.7">
+          <p id="section-3-1.7.1">Digital Asset Network (or Asset Network): The underlying system, such as a Distributed Ledger (DLT) or a centralized database, on which a digital asset is recorded and maintained.<a href="#section-3-1.7.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.8">
+          <p id="section-3-1.8.1">VASP (Virtual Asset Service Provider): The real-world operational entity (e.g., a financial institution, a crypto exchange) that operates a Gateway and is responsible for regulatory compliance.<a href="#section-3-1.8.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.9">
+          <p id="section-3-1.9.1">2PC (Two-Phase Commit): A protocol pattern used by SATP to coordinate a transaction between two or more distributed systems (Gateways) to ensure Atomicity. It consists of a "Prepare" (or "Vote") phase and a "Commit" (or "Decision") phase.<a href="#section-3-1.9.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.10">
+          <p id="section-3-1.10.1">ACID (Atomicity, Consistency, Isolation, Durability): A set of properties that guarantee the reliability of transactions. SATP aims to provide these guarantees for the cross-network transfer itself.<a href="#section-3-1.10.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.11">
+          <p id="section-3-1.11.1">Payload: The application-level data within an SATP message, typically formatted as JSON <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span> and secured with JWS <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span>, containing details of the transfer, assets, and compliance information.<a href="#section-3-1.11.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.12">
+          <p id="section-3-1.12.1">PII (Personally Identifiable Information): Sensitive data about the originator or beneficiary of a transfer (e.g., name, address) that is often required for regulatory compliance, such as the FATF Travel Rule.<a href="#section-3-1.12.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-3-1.13">
+          <p id="section-3-1.13.1">Secure Channel: An encrypted communication path between two gateways, typically established using Transport Layer Security (TLS) <span>[<a href="#RFC8446" class="cite xref">RFC8446</a>]</span>, which SATP mandates for all communication.<a href="#section-3-1.13.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
 </section>
 </div>
-<div id="security-considerations">
+<div id="core-protocol-flows">
 <section id="section-4">
-      <h2 id="name-security-considerations">
-<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      <h2 id="name-core-protocol-flows">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-core-protocol-flows" class="section-name selfRef">Core Protocol Flows</a>
       </h2>
-<p id="section-4-1">TBA<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-1">This section provides non-normative examples of the message flows between peer gateways for common SATP use cases. These flows illustrate the practical application of the 2-Phase Commit (2PC) model defined in the SATP Core <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> specification, which is the foundation for providing ACID guarantees.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">The protocol is divided into two primary phases:<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">Phase 1 (Prepare): The Originator Gateway (OG) proposes a transfer (TransferRequest), and the Beneficiary Gateway (BG) validates it and "votes" by reserving the resources and responding (TransferAcknowledgement or TransferError).<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">Phase 2 (Commit/Abort): The OG receives the vote. If the vote was "YES" (Ack), the OG commits the transfer on its side and instructs the BG to do the same (TransferCommit). If the vote was "NO" (Error), the OG aborts the transfer and rolls back any changes.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<div id="use-case-1-simple-asset-transfer-successful">
+<section id="section-4.1">
+        <h3 id="name-use-case-1-simple-asset-tra">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-use-case-1-simple-asset-tra" class="section-name selfRef">Use Case 1: Simple Asset Transfer (Successful)</a>
+        </h3>
+<p id="section-4.1-1">This is the "happy path" scenario for a straightforward asset transfer where compliance checks are minimal or integrated seamlessly.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<p id="section-4.1-2">Message Flow: The flow begins when the Originator Gateway (OG) initiates the Prepare phase by sending a TransferRequest message. This message contains the asset details, amount, and destination. The Beneficiary Gateway (BG) receives this request, validates the address, and confirms it can receive the asset. The BG then sends a TransferAcknowledgement message, signaling its "Vote YES" to proceed. Upon receiving this acknowledgment, the OG enters the Commit phase, sending a TransferCommit message to the BG. The BG receives this final instruction, finalizes the transfer, and replies with a TransferFinalization (or a final simple Ack) to complete the protocol.<a href="#section-4.1-2" class="pilcrow">¶</a></p>
+<p id="section-4.1-3">Network Roles: On the Originator Network, the OG places a "lock" on the user's assets before sending the TransferRequest or immediately after, but before the Commit phase. This lock ensures the assets cannot be double-spent. Upon receiving the TransferAcknowledgement and sending the TransferCommit, the OG executes the final action (e.g., "burning" the asset or transferring it to a gateway-controlled vault). On the Beneficiary Network, the BG's TransferAcknowledgement signifies it is ready to credit the user. Upon receiving the TransferCommit, the BG executes its final action (e.g., "minting" the new asset or releasing funds to the recipient's account).<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="use-case-2-transfer-with-pii-compliance-successful">
+<section id="section-4.2">
+        <h3 id="name-use-case-2-transfer-with-pi">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-use-case-2-transfer-with-pi" class="section-name selfRef">Use Case 2: Transfer with PII Compliance (Successful)</a>
+        </h3>
+<p id="section-4.2-1">This flow is common for transfers between VASPs that must adhere to regulations like the FATF Travel Rule, requiring the exchange of PII.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">Message Flow: The message flow is identical to the simple transfer (Request -&gt; Ack -&gt; Commit -&gt; Finalization). However, the content of the TransferRequest message is expanded. It now also contains the required originator and beneficiary PII, which is encrypted using JWE <span>[<a href="#RFC7516" class="cite xref">RFC7516</a>]</span> as described in the Privacy Considerations section.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">Validation and Network Roles: The primary difference lies in the BG's validation logic. Before the BG can send the TransferAcknowledgement ("Vote YES"), it decrypts the PII payload. It then validates this PII against its internal compliance engine (e.g., checking for sanctions lists, AML policies, or data formatting). If the PII is valid and passes all checks, the BG proceeds with the TransferAcknowledgement. The Originator Network's role is unchanged, but the OG is responsible for correctly collecting and encrypting this PII. The Beneficiary Network's action (minting/releasing funds) is now contingent not only on a valid TransferCommit but also on the prior success of this compliance check.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.2-4">This flow ensures that no asset is moved or committed on the Originator Network until the Beneficiary Gateway has confirmed it can legally accept the transfer and the associated PII.<a href="#section-4.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="use-case-3-transfer-rejection-rollback">
+<section id="section-4.3">
+        <h3 id="name-use-case-3-transfer-rejecti">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-use-case-3-transfer-rejecti" class="section-name selfRef">Use Case 3: Transfer Rejection (Rollback)</a>
+        </h3>
+<p id="section-4.3-1">This "unhappy path" scenario demonstrates the 2PC "Abort" phase, which is critical for maintaining atomicity when a transfer cannot be completed.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">Message Flow: The OG initiates the transfer by sending a TransferRequest. The BG receives this request and performs its validation (as in Use Case 1 or 2). During this validation, the BG discovers a critical error. This could be a failed compliance check (e.g., a sanctioned recipient), an invalid asset type, a non-existent destination address, or any other business rule violation.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<p id="section-4.3-3">Because it cannot proceed, the BG "Votes NO" by sending a TransferError message instead of an acknowledgment. This TransferError message contain a specific error code and a human-readable description of the problem. Upon receiving the TransferError, the OG immediately enters the Abort phase. The protocol stops here; no TransferCommit message is ever sent.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<p id="section-4.3-4">Network Roles: The Beneficiary Network does nothing; it received a request but rejected it before taking any action on its ledger. The atomicity guarantee is fulfilled by the Originator Network. When the OG receives the TransferError, it executes a rollback. This involves removing the "lock" placed on the user's assets, returning them to the sender's control. The OG should then report the failure (and the reason provided by the BG) to the originating user.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="use-case-4-multi-hop-intermediary-transfer">
+<section id="section-4.4">
+        <h3 id="name-use-case-4-multi-hop-interm">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-use-case-4-multi-hop-interm" class="section-name selfRef">Use Case 4: Multi-Hop (Intermediary) Transfer</a>
+        </h3>
+<p id="section-4.4-1">This more complex scenario involves routing a transfer through one or more Intermediary Gateways (IG). This flow (e.g., A -&gt; B -&gt; C) essentially "chains" two separate SATP 2PC flows together.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">Message Flow: The flow is initiated by the OG (Gateway A), which sends a TransferRequest to the IG (Gateway B). This request identifies Gateway C as the final beneficiary. Gateway B receives this request and acts as a "Beneficiary" to Gateway A, but also as an "Originator" to Gateway C.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+<p id="section-4.4-3">Gateway B (IG) immediately initiates its own TransferRequest (Phase 1) to Gateway C (BG), forwarding the relevant asset and PII data. Gateway B doesn't send its TransferAcknowledgement ("Vote YES") back to Gateway A until it has first received a TransferAcknowledgement from Gateway C.<a href="#section-4.4-3" class="pilcrow">¶</a></p>
+<p id="section-4.4-4">Network Roles and Atomicity: This nested 2PC flow creates an end-to-end atomic guarantee. The "Vote YES" (TransferAcknowledgement) messages propagate backward from the final destination (C -&gt; B, then B -&gt; A). The TransferCommit messages propagate forward from the origin (A -&gt; B, then B -&gt; C).<a href="#section-4.4-4" class="pilcrow">¶</a></p>
+<p id="section-4.4-5">If the final BG (Gateway C) sends a TransferError ("Vote NO"), the IG (Gateway B) relays this failure by sending a TransferError back to the OG (Gateway A). This triggers a full, cascading rollback across all participating networks. The Intermediary Network (Network B) never takes custody of the asset; it merely acts as a routing conduit, and the protocol ensures the asset is only ever committed at the final destination.<a href="#section-4.4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="data-model-and-payload">
+<section id="section-5">
+      <h2 id="name-data-model-and-payload">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-data-model-and-payload" class="section-name selfRef">Data Model and Payload</a>
+      </h2>
+<p id="section-5-1">This section provides non-normative examples of the data models used in SATP messages. The core SATP specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> defines the normative data structures and formats. All SATP messages are required to be encapsulated within a secure envelope, such as a JWS (JSON Web Signature) <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE (CBOR Object Signing and Encryption) <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span>, to ensure data integrity and sender authentication.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">The payload of this secure envelope is the SATP message itself (e.g., TransferRequest, TransferAcknowledgement, TransferError). Implementers need to consider to agree on the serialization format, with JSON <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span> and CBOR <span>[<a href="#RFC8949" class="cite xref">RFC8949</a>]</span> being the recommended formats. The JSON payload is required to use UTF-8 encoding.<a href="#section-5-2" class="pilcrow">¶</a></p>
+<div id="gateway-identifiers">
+<section id="section-5.1">
+        <h3 id="name-gateway-identifiers">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-gateway-identifiers" class="section-name selfRef">Gateway Identifiers</a>
+        </h3>
+<p id="section-5.1-1">Gateways is identified using unique, routable identifiers. While the core specification may allow various formats, this guide RECOMMENDEDs using either a DID (Decentralized Identifier) <span>[<a href="#W3C-DID-CORE" class="cite xref">W3C-DID-CORE</a>]</span> or a secure HTTPS-based URI. The use of DIDs is particularly beneficial for automated discovery of public keys and service endpoints.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">Specific examples of identifiers that can be supported:<a href="#section-5.1-2" class="pilcrow">¶</a></p>
+<p id="section-5.1-3">DID (vLEI): did:vlei:GLEIF.SF4G.393O.5O9B (Uses a vLEI for VASP identification)<a href="#section-5.1-3" class="pilcrow">¶</a></p>
+<p id="section-5.1-4">DID (web): did:web:vasp-a.com<a href="#section-5.1-4" class="pilcrow">¶</a></p>
+<p id="section-5.1-5">URI: httpsa://satp.vasp-b.com/gateway<a href="#section-5.1-5" class="pilcrow">¶</a></p>
+<p id="section-5.1-6">These identifiers are used in the originatorGateway and beneficiaryGateway fields of SATP messages.<a href="#section-5.1-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example-payload-transferrequest-json">
+<section id="section-5.2">
+        <h3 id="name-example-payload-transferreq">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-example-payload-transferreq" class="section-name selfRef">Example Payload: TransferRequest (JSON)</a>
+        </h3>
+<p id="section-5.2-1">The following example shows the decoded payload of a JWS token for a TransferRequest message, corresponding to Use Case 2 (Transfer with PII Compliance). This entire JSON object is what is signed and placed within the payload field of the JWS envelope.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">JSON<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+<p id="section-5.2-3">{
+  "messageType": "TransferRequest",
+  "jti": "a7d9f8b1-c2e3-4d5f-b6a7-e8f9b0c1d2e3",
+  "iat": 1761000000,
+  "originatorGateway": "did:vlei:GLEIF.SF4G.393O.5O9B",
+  "beneficiaryGateway": "did:vlei:GLEIF.9876.WXYZ.5432",
+  "assetTransfer": {
+    "assetType": "urn:iso:std:iso:4217:USD",
+    "amount": "1500.00",
+    "destinationAddress": "0xABC123...[beneficiary_address]"
+  },
+  "compliancePayload": "eyJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiRUNESC1FUytB..."
+}<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+<p id="section-5.2-4">In this example, the jti (JWT ID) and iat (Issued At) claims are used for anti-replay protection, as described in the Security Considerations. The compliancePayload field contains a JWE (JSON Web Encryption) <span>[<a href="#RFC7516" class="cite xref">RFC7516</a>]</span> token. This JWE encapsulates the sensitive PII (e.g., originator's name, address) and is encrypted for the Beneficiary Gateway, in line with the Privacy Considerations.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="cbor-representation">
+<section id="section-5.3">
+        <h3 id="name-cbor-representation">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-cbor-representation" class="section-name selfRef">CBOR Representation</a>
+        </h3>
+<p id="section-5.3-1">For implementations prioritizing minimal data size, especially in constrained environments, CBOR <span>[<a href="#RFC8949" class="cite xref">RFC8949</a>]</span> is the recommended binary format. The SATP message can then be encapsulated using COSE <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span> (e.g., a COSE_Sign1 structure) instead of JWS.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-2">The content of the COSE payload would be the CBOR-encoded representation of the JSON object shown above. The core SATP specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> is required to define integer mappings for common JSON string keys (e.g., "messageType" might be mapped to the integer 1, "jti" to 2, etc.) to achieve significant payload reduction. Implementers are encouraged to adhere to these official mappings to ensure cross-format interoperability.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="interoperability-profiles">
+<section id="section-6">
+      <h2 id="name-interoperability-profiles">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-interoperability-profiles" class="section-name selfRef">Interoperability Profiles</a>
+      </h2>
+<p id="section-6-1">The SATP core specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> provides a robust and flexible framework for secure asset transfers. This flexibility, however, can lead to interoperability challenges if not properly managed. For example, one gateway may implement the protocol using JSON/JWS, while another uses CBOR/COSE. Similarly, one gateway may require mandatory PII compliance payloads for all transfers, while another only supports simple, non-compliance transfers.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2">To mitigate this and to provide a clear path for interoperability, this guide defines a set of Interoperability Profiles. A profile is a named set of normative features, algorithms, message formats, and protocol flows that an implementation is required to support in full to claim conformance to that profile. This allows gateways to easily discover and verify that they share a compatible set of capabilities before attempting a transfer.<a href="#section-6-2" class="pilcrow">¶</a></p>
+<p id="section-6-3">Gateways are required to publicly declare which profiles they support. This can be achieved through a service discovery mechanism, such as a well-known URI (as defined in <span>[<a href="#RFC8615" class="cite xref">RFC8615</a>]</span>) hosted at the gateway's domain, which returns a machine-readable JSON object describing the gateway's capabilities and supported profiles.<a href="#section-6-3" class="pilcrow">¶</a></p>
+<p id="section-6-4">This section introduces a baseline profile, SATP-Core-v1.0. All gateways claiming to be SATP-compliant are required to implement this profile at a minimum, as it ensures baseline functionality for simple transfers. Additional profiles, such as a SATP-FATF-Compliance-v1.0 profile, may be defined in this document or in separate companion documents to address specific use cases like regulatory compliance.<a href="#section-6-4" class="pilcrow">¶</a></p>
+<p id="section-6-5">The following is an example of a machine-readable JSON definition for the baseline SATP-Core-v1.0 profile. This object could be used in a service discovery document.<a href="#section-6-5" class="pilcrow">¶</a></p>
+<p id="section-6-6">JSON<a href="#section-6-6" class="pilcrow">¶</a></p>
+<p id="section-6-7">{
+  "profileName": "SATP-Core-v1.0",
+  "version": "1.0",
+  "description": "Baseline interoperability for simple asset transfers without PII compliance payloads.",
+  "basedOn": [
+    "SATcore",
+    "SATarch"
+  ],
+  "supportedFlows": [
+    "SimpleAssetTransfer",
+    "TransferRejection"
+  ],
+  "payload": {
+    "format": "JSON",
+    "encoding": "UTF-8"
+  },
+  "security": {
+    "envelope": "JWS",
+    "signatureAlgorithms": [
+      "ES256",
+      "ES256K"
+    ],
+    "transport": "mTLS",
+    "tlsVersion": [
+      "TLSv1.3"
+    ]
+  },
+  "compliance": {
+    "supported": false
+  },
+  "messageTypes": [
+    "TransferRequest",
+    "TransferAcknowledgement",
+    "TransferError",
+    "TransferCommit",
+    "TransferFinalization"
+  ]
+}<a href="#section-6-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="open-sources-and-test-tooling">
+<section id="section-7">
+      <h2 id="name-open-sources-and-test-tooli">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-open-sources-and-test-tooli" class="section-name selfRef">Open Sources and Test Tooling</a>
+      </h2>
+<p id="section-7-1">A robust and diverse ecosystem of implementations is essential for the success and adoption of SATP. This ecosystem includes both public, open-source projects, which serve as reference implementations and testbeds, and non-public (closed-source) commercial implementations, which validate the standard against real-world business requirements. The availability of both types of implementations allows the community to build a common understanding and refine the protocol.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">On the open-source front, a key reference implementation is being developed within the Linux Foundation Decentralized Trust (lfdecentralizedtrust) community. The Hyperledger Cacti project, an interoperability framework, provides a modular architecture for connecting heterogeneous DLTs. This project hosts the SATP-Hermes plugin, which implements a fully functional SATP Gateway. This SATP-Hermes module acts as a vital, public reference implementation that other developers can test against and contribute to.<a href="#section-7-2" class="pilcrow">¶</a></p>
+<p id="section-7-3">In the non-public and commercial domain, Quant Network's Overledger platform is a prominent example. As a major contributor to the SATP standardization process, Quant utilizes the SATP gateway model as a core component of its Overledger architecture. Overledger is a commercial platform designed to provide interoperability between diverse blockchains and legacy enterprise systems, and its implementation validates the SATP framework's applicability to institutional and enterprise-grade use cases.<a href="#section-7-3" class="pilcrow">¶</a></p>
+<p id="section-7-4">The existence of multiple, independent implementations necessitates common test tooling to ensure true interoperability. It is recommended that the SATP community develops a shared Test Suite and a set of comprehensive Test Vectors (examples of which may be found in the Appendix of this guide). This test suite should validate not only the "happy path" flows but also all defined error states, security requirements, and protocol edge cases.<a href="#section-7-4" class="pilcrow">¶</a></p>
+<p id="section-7-5">Implementers of both open and closed-source solutions are encouraged to participate in community-driven interoperability testing events, such as IETF Hackathons or "Interop Fests". These events provide a crucial venue for testing different implementations against one another, identifying ambiguities in the specification, and collectively strengthening the interoperability of the entire SATP ecosystem.<a href="#section-7-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="securuity-considerations">
+<section id="section-8">
+      <h2 id="name-securuity-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-securuity-considerations" class="section-name selfRef">Securuity Considerations</a>
+      </h2>
+<p id="section-8-1">This section expands on the normative security requirements defined in the SATP core specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>, offering practical guidance to help implementers avoid common pitfalls and securely configure their gateways.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">Transport Security Configuration: The SATP core specification mandates the use of a secure channel. Implementers should ensure this channel is properly configured to prevent eavesdropping, man-in-the-middle (MITM) attacks, and replay of the transport session. It is good practice to support TLS 1.3 <span>[<a href="#RFC8446" class="cite xref">RFC8446</a>]</span> or a subsequent version. Implementations should avoid negotiating or supporting any version of TLS prior to 1.2, and it is recommended to only support TLS 1.3+. Implementations should also avoid cipher suites known to be weak (e.g., those using RC4, 3DES, or anonymous Diffie-Hellman). It is recommended to configure servers to only support cipher suites that provide Perfect Forward Secrecy (PFS). To ensure that only authorized gateways can communicate, implementations are encouraged to use Mutual TLS (mTLS). In an mTLS exchange, the Beneficiary Gateway (server) authenticates the Originator Gateway (client) by verifying its client-side X.509 certificate, in addition to the standard server-side certificate validation performed by the client.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<p id="section-8-3">Gateway Key Management Lifecycle: SATP messages rely on digital signatures (JWS/COSE) for integrity and non-repudiation. The private keys used for this purpose are a high-value target and require careful protection. Private keys should not be stored in plaintext in configuration files or source code. It is strongly recommended that private keys be generated and stored within a Hardware Security Module (HSM) or an equivalent isolated secure environment (e.g., TEE, Secure Enclave) that prevents key exfiltration. Implementers are encouraged to have a defined policy for periodic key rotation (e.g., annually or upon suspected compromise). Implementations should also be designed with "crypto-agility" in mind. Hard-coding specific algorithms or curves (e.g., ES256K) is discouraged, and the system should be capable of upgrading to new signing algorithms if vulnerabilities are discovered in the currently used ones.<a href="#section-8-3" class="pilcrow">¶</a></p>
+<p id="section-8-4">Message Signature and Verification Best Practices: Improper validation of JWS <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span> signatures can lead to severe vulnerabilities. When verifying a signature, the alg (algorithm) header parameter should be checked against an explicit allow-list of acceptable algorithms maintained by the verifier. Any message received with an alg value not on this list should be rejected. In particular, it is critical that the alg:none value is rejected. This guide recommends that the signature be applied to the canonicalized form of the entire message payload to prevent ambiguity. The implementation guide should provide clear test vectors showing exactly which bytes are included in the signature computation. Signers are encouraged to include a Key ID (e.g., kid in JWS) in the protected header to aid the verifier in selecting the correct public key for validation, especially during and after key rotation.<a href="#section-8-4" class="pilcrow">¶</a></p>
+<p id="section-8-5">Protocol-Level Attack Mitigation: The stateful nature of the 2-Phase Commit (2PC) protocol can be exploited for denial-of-service (DoS) or replay attacks. All state-changing messages (especially TransferRequest) should include a unique identifier (e.g., a jti claim) and a timestamp (e.g., an iat claim). A Beneficiary Gateway should maintain a record of recently processed jti values to detect and reject replayed messages. Implementations should enforce strict timeouts for 2PC transactions. A Beneficiary Gateway that receives a Phase 1 (Prepare) request should release any locks or reserved resources if the transaction is not finalized (Committed or Aborted) within a predefined, reasonable timeframe (e.g., 5 minutes). This prevents resource exhaustion DoS attacks. Gateway endpoints are encouraged to implement rate limiting based on source IP, client certificate, or other identifiable metrics to mitigate volumetric DoS and brute-force attacks.<a href="#section-8-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="privacy-considerations">
+<section id="section-9">
+      <h2 id="name-privacy-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-9-1">Privacy is a fundamental consideration for SATP gateways, especially since the protocol often carries sensitive Personally Identifiable Information (PII) for regulatory needs (like the FATF Travel Rule). Implementers are encouraged to adopt a "Privacy by Design" approach. This involves protecting data not just from external attackers, but also managing how legitimate participants handle data to prevent misuse or leakage.<a href="#section-9-1" class="pilcrow">¶</a></p>
+<p id="section-9-2">Data Minimization: It's good practice for a gateway to avoid sending the complete set of PII it holds about an originator in every request. Instead, the TransferRequest should ideally only contain the minimum set of PII fields that are strictly required by the Beneficiary Gateway's jurisdiction or its stated compliance policy. A policy-driven approach is recommended to dynamically determine the appropriate data payload for each transfer, thereby limiting the privacy risk and exposure in every transaction.<a href="#section-9-2" class="pilcrow">¶</a></p>
+<p id="section-9-3">Privacy-preserving Logging: Implementations should aim to ensure privacy-preserving logging. Sensitive PII (such as customer names, residential addresses, or national identification numbers) should not be written in plaintext to any general-purpose application, debug, or INFO level logs. Traceability and debugging can be achieved using non-sensitive correlation identifiers, such as the jti of the TransferRequest. Furthermore, any PII received should be subject to purpose binding (used only for the compliance check it was intended for) and storage limitation (securely deleted after the mandated legal retention period has expired).<a href="#section-9-3" class="pilcrow">¶</a></p>
+<p id="section-9-4">Transaction Linkability and Metadata Protection: Even when the PII payload is encrypted (e.g., using JWE), the metadata of the SATP flow—such as the identities of the participating gateways, the frequency of transfers, and the timing of the messages—remains visible to the gateways and potentially to network observers. This metadata can be used to infer sensitive patterns about users and institutions. While the mandated use of TLS mitigates passive network observation, implementers are encouraged to avoid placing any unnecessary unique identifiers in unencrypted headers to reduce the risk of linkability.<a href="#section-9-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="iana-considerations">
-<section id="section-5">
+<section id="section-10">
       <h2 id="name-iana-considerations">
-<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
-<p id="section-5-1">There are no IANA considerations related to this document.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-10-1">There are no IANA considerations related to this document.<a href="#section-10-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="sec-combined-references">
-<section id="section-6">
+<section id="section-11">
       <h2 id="name-references">
-<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-references" class="section-name selfRef">References</a>
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-references" class="section-name selfRef">References</a>
       </h2>
 <div id="sec-normative-references">
-<section id="section-6.1">
+<section id="section-11.1">
         <h3 id="name-normative-references">
-<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+<a href="#section-11.1" class="section-number selfRef">11.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
         </h3>
 <dl class="references">
 <dt id="RFC2119">[RFC2119]</dt>
@@ -1296,18 +1564,50 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 </section>
 </div>
 <div id="sec-informative-references">
-<section id="section-6.2">
+<section id="section-11.2">
         <h3 id="name-informative-references">
-<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+<a href="#section-11.2" class="section-number selfRef">11.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
         </h3>
 <dl class="references">
+<dt id="RFC7515">[RFC7515]</dt>
+        <dd>
+<span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Bradley, J.</span>, and <span class="refAuthor">N. Sakimura</span>, <span class="refTitle">"JSON Web Signature (JWS)"</span>, <span class="seriesInfo">RFC 7515</span>, <span class="seriesInfo">DOI 10.17487/RFC7515</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7515">https://www.rfc-editor.org/rfc/rfc7515</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7516">[RFC7516]</dt>
+        <dd>
+<span class="refAuthor">Jones, M.</span> and <span class="refAuthor">J. Hildebrand</span>, <span class="refTitle">"JSON Web Encryption (JWE)"</span>, <span class="seriesInfo">RFC 7516</span>, <span class="seriesInfo">DOI 10.17487/RFC7516</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7516">https://www.rfc-editor.org/rfc/rfc7516</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8152">[RFC8152]</dt>
+        <dd>
+<span class="refAuthor">Schaad, J.</span>, <span class="refTitle">"CBOR Object Signing and Encryption (COSE)"</span>, <span class="seriesInfo">RFC 8152</span>, <span class="seriesInfo">DOI 10.17487/RFC8152</span>, <time datetime="2017-07" class="refDate">July 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8152">https://www.rfc-editor.org/rfc/rfc8152</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8259">[RFC8259]</dt>
+        <dd>
+<span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8259">https://www.rfc-editor.org/rfc/rfc8259</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8446">[RFC8446]</dt>
+        <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8446">https://www.rfc-editor.org/rfc/rfc8446</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8615">[RFC8615]</dt>
+        <dd>
+<span class="refAuthor">Nottingham, M.</span>, <span class="refTitle">"Well-Known Uniform Resource Identifiers (URIs)"</span>, <span class="seriesInfo">RFC 8615</span>, <span class="seriesInfo">DOI 10.17487/RFC8615</span>, <time datetime="2019-05" class="refDate">May 2019</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8615">https://www.rfc-editor.org/rfc/rfc8615</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8949">[RFC8949]</dt>
+        <dd>
+<span class="refAuthor">Bormann, C.</span> and <span class="refAuthor">P. Hoffman</span>, <span class="refTitle">"Concise Binary Object Representation (CBOR)"</span>, <span class="seriesInfo">STD 94</span>, <span class="seriesInfo">RFC 8949</span>, <span class="seriesInfo">DOI 10.17487/RFC8949</span>, <time datetime="2020-12" class="refDate">December 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8949">https://www.rfc-editor.org/rfc/rfc8949</a>&gt;</span>. </dd>
+<dd class="break"></dd>
 <dt id="SATarch">[SATarch]</dt>
         <dd>
 <span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Smith, N.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer (SAT) Interoperability Architecture"</span>, <time datetime="2025-06" class="refDate">June 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/">https://datatracker.ietf.org/doc/draft-ietf-satp-architecture/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="SATcore">[SATcore]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Belchior, R.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer Protocol (SATP) Core"</span>, <time datetime="2025-07" class="refDate">July 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/draft-ietf-satp-core/">https://datatracker.ietf.org/doc/draft-ietf-satp-core/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="W3C-DID-CORE">[W3C-DID-CORE]</dt>
+      <dd>
+<span class="refAuthor">Sporny, M.</span>, <span class="refAuthor">Guy, A.</span>, <span class="refAuthor">Sabadello, M.</span>, and <span class="refAuthor">D. Reed</span>, <span class="refTitle">"Decentralized Identifiers (DIDs) v1.0"</span>, <time datetime="2022-07" class="refDate">July 2022</time>, <span>&lt;<a href="https://www.w3.org/TR/did-1.0/">https://www.w3.org/TR/did-1.0/</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
