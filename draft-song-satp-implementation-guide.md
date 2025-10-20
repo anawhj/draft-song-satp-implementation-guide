@@ -44,21 +44,25 @@ author:
     fullname: Hyojin Song
     organization: Seoul National Univ.
     email: fun@snu.ac.kr
+    country: South Korea
  -
     ins: Y-G. Hong
     fullname: Yong-Geun Hong
     organization: Daejeon Univ.
     email: yonggeun.hong@gmail.com
+    country: South Korea
  -
     ins: G. Jeong
     fullname: GukSik Jeong
     organization: TTA
     email: jgsigi@tta.or.kr
+    country: South Korea
  -
     ins: T. Hardjono
     name: Thomas Hardjono
     organization: MIT
     email: hardjono@mit.edu
+    country: USA
 
 informative:
   SATcore:
@@ -81,7 +85,7 @@ informative:
     title: Secure Asset Transfer (SAT) Interoperability Architecture
   RFC7515: RFC7515
   RFC7516: RFC7516
-  RFC8152: RFC8152
+  RFC9052: RFC9052
   RFC8259: RFC8259
   RFC8446: RFC8446
   RFC8615: RFC8615
@@ -114,7 +118,7 @@ A fundamental requirement for any cross-network value transfer is reliability. S
 
 This document, the "SATP Implementation Guide," serves as a non-normative companion to the core protocol specifications. Its purpose is to provide practical implementation guidance for SATP gateway developers and architects. It does not introduce any new normative requirements but instead clarifies the existing ones, outlines best practices, and provides concrete examples to aid in building secure, compliant, and interoperable SATP solutions.
 
-All guidance provided herein is based on the normative definitions found in the "Secure Asset Transfer Protocol (SATP) Core" [SATcore] and the "Secure Asset Transfer (SAT) Interoperability Architecture" [SATarch] documents. Implementers are encouraged to consult those core specifications for all formal requirements, data models, and protocol state definitions. This guide should be used as a supplementary resource to understand how those normative requirements may be practically applied.
+All guidance provided herein is based on the normative definitions found in the "Secure Asset Transfer Protocol (SATP) Core" [SATcore] and the "Secure Asset Transfer (SAT) Interoperability Architecture" [SATarch] documents. Implementers are encouraged to consult those core specifications for all formal requirements, data models, and protocol state definitions. This guide SHOULD be used as a supplementary resource to understand how those normative requirements may be practically applied.
 
 This guide elaborates on the abstract protocol by detailing common implementation scenarios. It provides concrete examples for core protocol flows, recommendations for payload structures, and best practices for critical areas such as security and privacy. Specific attention is given to topics like key management, payload encryption (JWE) for sensitive compliance data, and mitigating protocol-level attacks.
 
@@ -223,7 +227,7 @@ If the final BG (Gateway C) sends a TransferError ("Vote NO"), the IG (Gateway B
 
 # Data Model and Payload
 
-This section provides non-normative examples of the data models used in SATP messages. The core SATP specification [SATcore] defines the normative data structures and formats. All SATP messages are required to be encapsulated within a secure envelope, such as a JWS (JSON Web Signature) [RFC7515] or COSE (CBOR Object Signing and Encryption) [RFC8152], to ensure data integrity and sender authentication.
+This section provides non-normative examples of the data models used in SATP messages. The core SATP specification [SATcore] defines the normative data structures and formats. All SATP messages are required to be encapsulated within a secure envelope, such as a JWS (JSON Web Signature) [RFC7515] or COSE (CBOR Object Signing and Encryption) [RFC9052], to ensure data integrity and sender authentication.
 
 The payload of this secure envelope is the SATP message itself (e.g., TransferRequest, TransferAcknowledgement, TransferError). Implementers need to consider to agree on the serialization format, with JSON [RFC8259] and CBOR [RFC8949] being the recommended formats. The JSON payload is required to use UTF-8 encoding.
 
@@ -262,7 +266,7 @@ JSON
 In this example, the jti (JWT ID) and iat (Issued At) claims are used for anti-replay protection, as described in the Security Considerations. The compliancePayload field contains a JWE (JSON Web Encryption) [RFC7516] token. This JWE encapsulates the sensitive PII (e.g., originator's name, address) and is encrypted for the Beneficiary Gateway, in line with the Privacy Considerations.
 
 ## CBOR Representation
-For implementations prioritizing minimal data size, especially in constrained environments, CBOR [RFC8949] is the recommended binary format. The SATP message can then be encapsulated using COSE [RFC8152] (e.g., a COSE_Sign1 structure) instead of JWS.
+For implementations prioritizing minimal data size, especially in constrained environments, CBOR [RFC8949] is the recommended binary format. The SATP message can then be encapsulated using COSE [RFC9052] (e.g., a COSE_Sign1 structure) instead of JWS.
 
 The content of the COSE payload would be the CBOR-encoded representation of the JSON object shown above. The core SATP specification [SATcore] is required to define integer mappings for common JSON string keys (e.g., "messageType" might be mapped to the integer 1, "jti" to 2, etc.) to achieve significant payload reduction. Implementers are encouraged to adhere to these official mappings to ensure cross-format interoperability.
 
@@ -331,7 +335,7 @@ The existence of multiple, independent implementations necessitates common test 
 
 Implementers of both open and closed-source solutions are encouraged to participate in community-driven interoperability testing events, such as IETF Hackathons or "Interop Fests". These events provide a crucial venue for testing different implementations against one another, identifying ambiguities in the specification, and collectively strengthening the interoperability of the entire SATP ecosystem.
 
-# Securuity Considerations
+# Security Considerations
 
 This section expands on the normative security requirements defined in the SATP core specification [SATcore], offering practical guidance to help implementers avoid common pitfalls and securely configure their gateways.
 
@@ -339,7 +343,7 @@ Transport Security Configuration: The SATP core specification mandates the use o
 
 Gateway Key Management Lifecycle: SATP messages rely on digital signatures (JWS/COSE) for integrity and non-repudiation. The private keys used for this purpose are a high-value target and require careful protection. Private keys are required to not be stored in plaintext in configuration files or source code. It is strongly recommended that private keys be generated and stored within a Hardware Security Module (HSM) or an equivalent isolated secure environment (e.g., TEE, Secure Enclave) that prevents key exfiltration. Implementers are encouraged to have a defined policy for periodic key rotation (e.g., annually or upon suspected compromise). Implementations are encouraged to also be designed with "crypto-agility" in mind. Hard-coding specific algorithms or curves (e.g., ES256K) is discouraged, and the system is required to be capable of upgrading to new signing algorithms if vulnerabilities are discovered in the currently used ones.
 
-Message Signature and Verification Best Practices: Improper validation of JWS [RFC7515] or COSE [RFC8152] signatures can lead to severe vulnerabilities. When verifying a signature, the alg (algorithm) header parameter is required to be checked against an explicit allow-list of acceptable algorithms maintained by the verifier. Any message received with an alg value not on this list is rejected. In particular, it is critical that the alg:none value is rejected. This guide recommends that the signature be applied to the canonicalized form of the entire message payload to prevent ambiguity. The implementation guide provides clear test vectors showing exactly which bytes are included in the signature computation. Signers are encouraged to include a Key ID (e.g., kid in JWS) in the protected header to aid the verifier in selecting the correct public key for validation, especially during and after key rotation.
+Message Signature and Verification Best Practices: Improper validation of JWS [RFC7515] or COSE [RFC9052] signatures can lead to severe vulnerabilities. When verifying a signature, the alg (algorithm) header parameter is required to be checked against an explicit allow-list of acceptable algorithms maintained by the verifier. Any message received with an alg value not on this list is rejected. In particular, it is critical that the alg:none value is rejected. This guide recommends that the signature be applied to the canonicalized form of the entire message payload to prevent ambiguity. The implementation guide provides clear test vectors showing exactly which bytes are included in the signature computation. Signers are encouraged to include a Key ID (e.g., kid in JWS) in the protected header to aid the verifier in selecting the correct public key for validation, especially during and after key rotation.
 
 Protocol-Level Attack Mitigation: The stateful nature of the 2-Phase Commit (2PC) protocol can be exploited for denial-of-service (DoS) or replay attacks. All state-changing messages (especially TransferRequest) are required to include a unique identifier (e.g., a jti claim) and a timestamp (e.g., an iat claim). A Beneficiary Gateway maintains a record of recently processed jti values to detect and reject replayed messages. Implementations enforces strict timeouts for 2PC transactions. A Beneficiary Gateway that receives a Phase 1 (Prepare) request releases any locks or reserved resources if the transaction is not finalized (Committed or Aborted) within a predefined, reasonable timeframe (e.g., 5 minutes). This prevents resource exhaustion DoS attacks. Gateway endpoints are encouraged to implement rate limiting based on source IP, client certificate, or other identifiable metrics to mitigate volumetric DoS and brute-force attacks.
 
