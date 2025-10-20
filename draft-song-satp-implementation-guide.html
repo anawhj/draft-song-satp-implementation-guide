@@ -1208,7 +1208,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
             <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-open-sources-and-test-tooli" class="internal xref">Open Sources and Test Tooling</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
-            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-securuity-considerations" class="internal xref">Securuity Considerations</a></p>
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
             <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
@@ -1248,7 +1248,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <p id="section-1-2">The Secure Asset Transfer Protocol (SATP) provides a standardized mechanism for the secure and reliable transfer of digital assets across different asset networks. The protocol's primary scope is to define the messages and protocol flows for communication between peer gateways. In the SATP model, each gateway acts as a trusted representative for its respective network, managing the outbound (locking/burning) and inbound (unlocking/minting) transfer of assets.<a href="#section-1-2" class="pilcrow">¶</a></p>
 <p id="section-1-3">A fundamental requirement for any cross-network value transfer is reliability. SATP is explicitly designed to provide transactional guarantees, ensuring that the ACID properties (Atomicity, Consistency, Isolation, and Durability) are maintained. The protocol flow, often leveraging a 2-Phase Commit (2PC) pattern, ensures that a transfer operation either completes successfully on both the origin and destination networks or is safely rolled back. This prevents critical failure states, such as the loss of an asset or its unintentional duplication.<a href="#section-1-3" class="pilcrow">¶</a></p>
 <p id="section-1-4">This document, the "SATP Implementation Guide," serves as a non-normative companion to the core protocol specifications. Its purpose is to provide practical implementation guidance for SATP gateway developers and architects. It does not introduce any new normative requirements but instead clarifies the existing ones, outlines best practices, and provides concrete examples to aid in building secure, compliant, and interoperable SATP solutions.<a href="#section-1-4" class="pilcrow">¶</a></p>
-<p id="section-1-5">All guidance provided herein is based on the normative definitions found in the "Secure Asset Transfer Protocol (SATP) Core" <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> and the "Secure Asset Transfer (SAT) Interoperability Architecture" <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span> documents. Implementers are encouraged to consult those core specifications for all formal requirements, data models, and protocol state definitions. This guide should be used as a supplementary resource to understand how those normative requirements may be practically applied.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-5">All guidance provided herein is based on the normative definitions found in the "Secure Asset Transfer Protocol (SATP) Core" <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> and the "Secure Asset Transfer (SAT) Interoperability Architecture" <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span> documents. Implementers are encouraged to consult those core specifications for all formal requirements, data models, and protocol state definitions. This guide <span class="bcp14">SHOULD</span> be used as a supplementary resource to understand how those normative requirements may be practically applied.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-1-6">This guide elaborates on the abstract protocol by detailing common implementation scenarios. It provides concrete examples for core protocol flows, recommendations for payload structures, and best practices for critical areas such as security and privacy. Specific attention is given to topics like key management, payload encryption (JWE) for sensitive compliance data, and mitigating protocol-level attacks.<a href="#section-1-6" class="pilcrow">¶</a></p>
 <p id="section-1-7">The target audience for this document includes system architects designing gateway infrastructure, software engineers developing SATP client and server logic, and security professionals responsible for auditing and securing the implementation. This guide may also serve as a technical introduction for parties seeking to understand the practical workflow of the protocol beyond the abstract specification.<a href="#section-1-7" class="pilcrow">¶</a></p>
 <div class="alignLeft art-text artwork" id="section-1-8">
@@ -1398,7 +1398,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
       <h2 id="name-data-model-and-payload">
 <a href="#section-5" class="section-number selfRef">5. </a><a href="#name-data-model-and-payload" class="section-name selfRef">Data Model and Payload</a>
       </h2>
-<p id="section-5-1">This section provides non-normative examples of the data models used in SATP messages. The core SATP specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> defines the normative data structures and formats. All SATP messages are required to be encapsulated within a secure envelope, such as a JWS (JSON Web Signature) <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE (CBOR Object Signing and Encryption) <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span>, to ensure data integrity and sender authentication.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-1">This section provides non-normative examples of the data models used in SATP messages. The core SATP specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> defines the normative data structures and formats. All SATP messages are required to be encapsulated within a secure envelope, such as a JWS (JSON Web Signature) <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE (CBOR Object Signing and Encryption) <span>[<a href="#RFC9052" class="cite xref">RFC9052</a>]</span>, to ensure data integrity and sender authentication.<a href="#section-5-1" class="pilcrow">¶</a></p>
 <p id="section-5-2">The payload of this secure envelope is the SATP message itself (e.g., TransferRequest, TransferAcknowledgement, TransferError). Implementers need to consider to agree on the serialization format, with JSON <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span> and CBOR <span>[<a href="#RFC8949" class="cite xref">RFC8949</a>]</span> being the recommended formats. The JSON payload is required to use UTF-8 encoding.<a href="#section-5-2" class="pilcrow">¶</a></p>
 <div id="gateway-identifiers">
 <section id="section-5.1">
@@ -1441,7 +1441,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
         <h3 id="name-cbor-representation">
 <a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-cbor-representation" class="section-name selfRef">CBOR Representation</a>
         </h3>
-<p id="section-5.3-1">For implementations prioritizing minimal data size, especially in constrained environments, CBOR <span>[<a href="#RFC8949" class="cite xref">RFC8949</a>]</span> is the recommended binary format. The SATP message can then be encapsulated using COSE <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span> (e.g., a COSE_Sign1 structure) instead of JWS.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.3-1">For implementations prioritizing minimal data size, especially in constrained environments, CBOR <span>[<a href="#RFC8949" class="cite xref">RFC8949</a>]</span> is the recommended binary format. The SATP message can then be encapsulated using COSE <span>[<a href="#RFC9052" class="cite xref">RFC9052</a>]</span> (e.g., a COSE_Sign1 structure) instead of JWS.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
 <p id="section-5.3-2">The content of the COSE payload would be the CBOR-encoded representation of the JSON object shown above. The core SATP specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> is required to define integer mappings for common JSON string keys (e.g., "messageType" might be mapped to the integer 1, "jti" to 2, etc.) to achieve significant payload reduction. Implementers are encouraged to adhere to these official mappings to ensure cross-format interoperability.<a href="#section-5.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1510,15 +1510,15 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <p id="section-7-5">Implementers of both open and closed-source solutions are encouraged to participate in community-driven interoperability testing events, such as IETF Hackathons or "Interop Fests". These events provide a crucial venue for testing different implementations against one another, identifying ambiguities in the specification, and collectively strengthening the interoperability of the entire SATP ecosystem.<a href="#section-7-5" class="pilcrow">¶</a></p>
 </section>
 </div>
-<div id="securuity-considerations">
+<div id="security-considerations">
 <section id="section-8">
-      <h2 id="name-securuity-considerations">
-<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-securuity-considerations" class="section-name selfRef">Securuity Considerations</a>
+      <h2 id="name-security-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
       </h2>
 <p id="section-8-1">This section expands on the normative security requirements defined in the SATP core specification <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>, offering practical guidance to help implementers avoid common pitfalls and securely configure their gateways.<a href="#section-8-1" class="pilcrow">¶</a></p>
 <p id="section-8-2">Transport Security Configuration: The SATP core specification mandates the use of a secure channel. Implementers are encouraged to ensure this channel is properly configured to prevent eavesdropping, man-in-the-middle (MITM) attacks, and replay of the transport session. It is good practice to support TLS 1.3 <span>[<a href="#RFC8446" class="cite xref">RFC8446</a>]</span> or a subsequent version. Implementations are encouraged to avoid negotiating or supporting any version of TLS prior to 1.2, and it is recommended to only support TLS 1.3+. Implementations are encouraged to also avoid cipher suites known to be weak (e.g., those using RC4, 3DES, or anonymous Diffie-Hellman). It is recommended to configure servers to only support cipher suites that provide Perfect Forward Secrecy (PFS). To ensure that only authorized gateways can communicate, implementations are encouraged to use Mutual TLS (mTLS). In an mTLS exchange, the Beneficiary Gateway (server) authenticates the Originator Gateway (client) by verifying its client-side X.509 certificate, in addition to the standard server-side certificate validation performed by the client.<a href="#section-8-2" class="pilcrow">¶</a></p>
 <p id="section-8-3">Gateway Key Management Lifecycle: SATP messages rely on digital signatures (JWS/COSE) for integrity and non-repudiation. The private keys used for this purpose are a high-value target and require careful protection. Private keys are required to not be stored in plaintext in configuration files or source code. It is strongly recommended that private keys be generated and stored within a Hardware Security Module (HSM) or an equivalent isolated secure environment (e.g., TEE, Secure Enclave) that prevents key exfiltration. Implementers are encouraged to have a defined policy for periodic key rotation (e.g., annually or upon suspected compromise). Implementations are encouraged to also be designed with "crypto-agility" in mind. Hard-coding specific algorithms or curves (e.g., ES256K) is discouraged, and the system is required to be capable of upgrading to new signing algorithms if vulnerabilities are discovered in the currently used ones.<a href="#section-8-3" class="pilcrow">¶</a></p>
-<p id="section-8-4">Message Signature and Verification Best Practices: Improper validation of JWS <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE <span>[<a href="#RFC8152" class="cite xref">RFC8152</a>]</span> signatures can lead to severe vulnerabilities. When verifying a signature, the alg (algorithm) header parameter is required to be checked against an explicit allow-list of acceptable algorithms maintained by the verifier. Any message received with an alg value not on this list is rejected. In particular, it is critical that the alg:none value is rejected. This guide recommends that the signature be applied to the canonicalized form of the entire message payload to prevent ambiguity. The implementation guide provides clear test vectors showing exactly which bytes are included in the signature computation. Signers are encouraged to include a Key ID (e.g., kid in JWS) in the protected header to aid the verifier in selecting the correct public key for validation, especially during and after key rotation.<a href="#section-8-4" class="pilcrow">¶</a></p>
+<p id="section-8-4">Message Signature and Verification Best Practices: Improper validation of JWS <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span> or COSE <span>[<a href="#RFC9052" class="cite xref">RFC9052</a>]</span> signatures can lead to severe vulnerabilities. When verifying a signature, the alg (algorithm) header parameter is required to be checked against an explicit allow-list of acceptable algorithms maintained by the verifier. Any message received with an alg value not on this list is rejected. In particular, it is critical that the alg:none value is rejected. This guide recommends that the signature be applied to the canonicalized form of the entire message payload to prevent ambiguity. The implementation guide provides clear test vectors showing exactly which bytes are included in the signature computation. Signers are encouraged to include a Key ID (e.g., kid in JWS) in the protected header to aid the verifier in selecting the correct public key for validation, especially during and after key rotation.<a href="#section-8-4" class="pilcrow">¶</a></p>
 <p id="section-8-5">Protocol-Level Attack Mitigation: The stateful nature of the 2-Phase Commit (2PC) protocol can be exploited for denial-of-service (DoS) or replay attacks. All state-changing messages (especially TransferRequest) are required to include a unique identifier (e.g., a jti claim) and a timestamp (e.g., an iat claim). A Beneficiary Gateway maintains a record of recently processed jti values to detect and reject replayed messages. Implementations enforces strict timeouts for 2PC transactions. A Beneficiary Gateway that receives a Phase 1 (Prepare) request releases any locks or reserved resources if the transaction is not finalized (Committed or Aborted) within a predefined, reasonable timeframe (e.g., 5 minutes). This prevents resource exhaustion DoS attacks. Gateway endpoints are encouraged to implement rate limiting based on source IP, client certificate, or other identifiable metrics to mitigate volumetric DoS and brute-force attacks.<a href="#section-8-5" class="pilcrow">¶</a></p>
 </section>
 </div>
@@ -1577,10 +1577,6 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
         <dd>
 <span class="refAuthor">Jones, M.</span> and <span class="refAuthor">J. Hildebrand</span>, <span class="refTitle">"JSON Web Encryption (JWE)"</span>, <span class="seriesInfo">RFC 7516</span>, <span class="seriesInfo">DOI 10.17487/RFC7516</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7516">https://www.rfc-editor.org/rfc/rfc7516</a>&gt;</span>. </dd>
 <dd class="break"></dd>
-<dt id="RFC8152">[RFC8152]</dt>
-        <dd>
-<span class="refAuthor">Schaad, J.</span>, <span class="refTitle">"CBOR Object Signing and Encryption (COSE)"</span>, <span class="seriesInfo">RFC 8152</span>, <span class="seriesInfo">DOI 10.17487/RFC8152</span>, <time datetime="2017-07" class="refDate">July 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8152">https://www.rfc-editor.org/rfc/rfc8152</a>&gt;</span>. </dd>
-<dd class="break"></dd>
 <dt id="RFC8259">[RFC8259]</dt>
         <dd>
 <span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8259">https://www.rfc-editor.org/rfc/rfc8259</a>&gt;</span>. </dd>
@@ -1596,6 +1592,10 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <dt id="RFC8949">[RFC8949]</dt>
         <dd>
 <span class="refAuthor">Bormann, C.</span> and <span class="refAuthor">P. Hoffman</span>, <span class="refTitle">"Concise Binary Object Representation (CBOR)"</span>, <span class="seriesInfo">STD 94</span>, <span class="seriesInfo">RFC 8949</span>, <span class="seriesInfo">DOI 10.17487/RFC8949</span>, <time datetime="2020-12" class="refDate">December 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8949">https://www.rfc-editor.org/rfc/rfc8949</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9052">[RFC9052]</dt>
+        <dd>
+<span class="refAuthor">Schaad, J.</span>, <span class="refTitle">"CBOR Object Signing and Encryption (COSE): Structures and Process"</span>, <span class="seriesInfo">STD 96</span>, <span class="seriesInfo">RFC 9052</span>, <span class="seriesInfo">DOI 10.17487/RFC9052</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9052">https://www.rfc-editor.org/rfc/rfc9052</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="SATarch">[SATarch]</dt>
         <dd>
@@ -1630,6 +1630,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Hyojin Song</span></div>
 <div dir="auto" class="left"><span class="org">Seoul National Univ.</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
 <div class="email">
 <span>Email:</span>
 <a href="mailto:fun@snu.ac.kr" class="email">fun@snu.ac.kr</a>
@@ -1638,6 +1639,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Yong-Geun Hong</span></div>
 <div dir="auto" class="left"><span class="org">Daejeon Univ.</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
 <div class="email">
 <span>Email:</span>
 <a href="mailto:yonggeun.hong@gmail.com" class="email">yonggeun.hong@gmail.com</a>
@@ -1646,6 +1648,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">GukSik Jeong</span></div>
 <div dir="auto" class="left"><span class="org">TTA</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
 <div class="email">
 <span>Email:</span>
 <a href="mailto:jgsigi@tta.or.kr" class="email">jgsigi@tta.or.kr</a>
@@ -1654,6 +1657,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <address class="vcard">
         <div dir="auto" class="left"><span class="fn nameRole">Thomas Hardjono</span></div>
 <div dir="auto" class="left"><span class="org">MIT</span></div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
 <div class="email">
 <span>Email:</span>
 <a href="mailto:hardjono@mit.edu" class="email">hardjono@mit.edu</a>

@@ -91,7 +91,7 @@ Table of Contents
      5.3.  CBOR Representation
    6.  Interoperability Profiles
    7.  Open Sources and Test Tooling
-   8.  Securuity Considerations
+   8.  Security Considerations
    9.  Privacy Considerations
    10. IANA Considerations
    11. References
@@ -137,7 +137,7 @@ Table of Contents
    and the "Secure Asset Transfer (SAT) Interoperability Architecture"
    [SATarch] documents.  Implementers are encouraged to consult those
    core specifications for all formal requirements, data models, and
-   protocol state definitions.  This guide should be used as a
+   protocol state definitions.  This guide SHOULD be used as a
    supplementary resource to understand how those normative requirements
    may be practically applied.
 
@@ -388,7 +388,7 @@ Table of Contents
    normative data structures and formats.  All SATP messages are
    required to be encapsulated within a secure envelope, such as a JWS
    (JSON Web Signature) [RFC7515] or COSE (CBOR Object Signing and
-   Encryption) [RFC8152], to ensure data integrity and sender
+   Encryption) [RFC9052], to ensure data integrity and sender
    authentication.
 
    The payload of this secure envelope is the SATP message itself (e.g.,
@@ -447,7 +447,7 @@ Table of Contents
    For implementations prioritizing minimal data size, especially in
    constrained environments, CBOR [RFC8949] is the recommended binary
    format.  The SATP message can then be encapsulated using COSE
-   [RFC8152] (e.g., a COSE_Sign1 structure) instead of JWS.
+   [RFC9052] (e.g., a COSE_Sign1 structure) instead of JWS.
 
    The content of the COSE payload would be the CBOR-encoded
    representation of the JSON object shown above.  The core SATP
@@ -550,7 +550,7 @@ Table of Contents
    collectively strengthening the interoperability of the entire SATP
    ecosystem.
 
-8.  Securuity Considerations
+8.  Security Considerations
 
    This section expands on the normative security requirements defined
    in the SATP core specification [SATcore], offering practical guidance
@@ -592,7 +592,7 @@ Table of Contents
    discovered in the currently used ones.
 
    Message Signature and Verification Best Practices: Improper
-   validation of JWS [RFC7515] or COSE [RFC8152] signatures can lead to
+   validation of JWS [RFC7515] or COSE [RFC9052] signatures can lead to
    severe vulnerabilities.  When verifying a signature, the alg
    (algorithm) header parameter is required to be checked against an
    explicit allow-list of acceptable algorithms maintained by the
@@ -691,10 +691,6 @@ Table of Contents
               RFC 7516, DOI 10.17487/RFC7516, May 2015,
               <https://www.rfc-editor.org/rfc/rfc7516>.
 
-   [RFC8152]  Schaad, J., "CBOR Object Signing and Encryption (COSE)",
-              RFC 8152, DOI 10.17487/RFC8152, July 2017,
-              <https://www.rfc-editor.org/rfc/rfc8152>.
-
    [RFC8259]  Bray, T., Ed., "The JavaScript Object Notation (JSON) Data
               Interchange Format", STD 90, RFC 8259,
               DOI 10.17487/RFC8259, December 2017,
@@ -712,6 +708,11 @@ Table of Contents
               Representation (CBOR)", STD 94, RFC 8949,
               DOI 10.17487/RFC8949, December 2020,
               <https://www.rfc-editor.org/rfc/rfc8949>.
+
+   [RFC9052]  Schaad, J., "CBOR Object Signing and Encryption (COSE):
+              Structures and Process", STD 96, RFC 9052,
+              DOI 10.17487/RFC9052, August 2022,
+              <https://www.rfc-editor.org/rfc/rfc9052>.
 
    [SATarch]  Hardjono, T., Hargreaves, M., Smith, N., and V.
               Ramakrishna, "Secure Asset Transfer (SAT) Interoperability
@@ -737,19 +738,23 @@ Authors' Addresses
 
    Hyojin Song
    Seoul National Univ.
+   South Korea
    Email: fun@snu.ac.kr
 
 
    Yong-Geun Hong
    Daejeon Univ.
+   South Korea
    Email: yonggeun.hong@gmail.com
 
 
    GukSik Jeong
    TTA
+   South Korea
    Email: jgsigi@tta.or.kr
 
 
    Thomas Hardjono
    MIT
+   United States of America
    Email: hardjono@mit.edu
