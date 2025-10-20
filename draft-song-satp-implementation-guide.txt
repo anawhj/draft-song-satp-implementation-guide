@@ -346,7 +346,7 @@ Table of Contents
    atomicity guarantee is fulfilled by the Originator Network.  When the
    OG receives the TransferError, it executes a rollback.  This involves
    removing the "lock" placed on the user's assets, returning them to
-   the sender's control.  The OG should then report the failure (and the
+   the sender's control.  The OG then reports the failure (and the
    reason provided by the BG) to the originating user.
 
 4.4.  Use Case 4: Multi-Hop (Intermediary) Transfer
@@ -538,9 +538,9 @@ Table of Contents
    common test tooling to ensure true interoperability.  It is
    recommended that the SATP community develops a shared Test Suite and
    a set of comprehensive Test Vectors (examples of which may be found
-   in the Appendix of this guide).  This test suite should validate not
-   only the "happy path" flows but also all defined error states,
-   security requirements, and protocol edge cases.
+   in the Appendix of this guide).  This test suite is required to
+   validate not only the "happy path" flows but also all defined error
+   states, security requirements, and protocol edge cases.
 
    Implementers of both open and closed-source solutions are encouraged
    to participate in community-driven interoperability testing events,
@@ -558,48 +558,50 @@ Table of Contents
    their gateways.
 
    Transport Security Configuration: The SATP core specification
-   mandates the use of a secure channel.  Implementers should ensure
-   this channel is properly configured to prevent eavesdropping, man-in-
-   the-middle (MITM) attacks, and replay of the transport session.  It
-   is good practice to support TLS 1.3 [RFC8446] or a subsequent
-   version.  Implementations should avoid negotiating or supporting any
-   version of TLS prior to 1.2, and it is recommended to only support
-   TLS 1.3+. Implementations should also avoid cipher suites known to be
-   weak (e.g., those using RC4, 3DES, or anonymous Diffie-Hellman).  It
-   is recommended to configure servers to only support cipher suites
-   that provide Perfect Forward Secrecy (PFS).  To ensure that only
-   authorized gateways can communicate, implementations are encouraged
-   to use Mutual TLS (mTLS).  In an mTLS exchange, the Beneficiary
-   Gateway (server) authenticates the Originator Gateway (client) by
-   verifying its client-side X.509 certificate, in addition to the
-   standard server-side certificate validation performed by the client.
+   mandates the use of a secure channel.  Implementers are encouraged to
+   ensure this channel is properly configured to prevent eavesdropping,
+   man-in-the-middle (MITM) attacks, and replay of the transport
+   session.  It is good practice to support TLS 1.3 [RFC8446] or a
+   subsequent version.  Implementations are encouraged to avoid
+   negotiating or supporting any version of TLS prior to 1.2, and it is
+   recommended to only support TLS 1.3+. Implementations are encouraged
+   to also avoid cipher suites known to be weak (e.g., those using RC4,
+   3DES, or anonymous Diffie-Hellman).  It is recommended to configure
+   servers to only support cipher suites that provide Perfect Forward
+   Secrecy (PFS).  To ensure that only authorized gateways can
+   communicate, implementations are encouraged to use Mutual TLS (mTLS).
+   In an mTLS exchange, the Beneficiary Gateway (server) authenticates
+   the Originator Gateway (client) by verifying its client-side X.509
+   certificate, in addition to the standard server-side certificate
+   validation performed by the client.
 
    Gateway Key Management Lifecycle: SATP messages rely on digital
    signatures (JWS/COSE) for integrity and non-repudiation.  The private
    keys used for this purpose are a high-value target and require
-   careful protection.  Private keys should not be stored in plaintext
-   in configuration files or source code.  It is strongly recommended
-   that private keys be generated and stored within a Hardware Security
-   Module (HSM) or an equivalent isolated secure environment (e.g., TEE,
-   Secure Enclave) that prevents key exfiltration.  Implementers are
-   encouraged to have a defined policy for periodic key rotation (e.g.,
-   annually or upon suspected compromise).  Implementations should also
-   be designed with "crypto-agility" in mind.  Hard-coding specific
-   algorithms or curves (e.g., ES256K) is discouraged, and the system
-   should be capable of upgrading to new signing algorithms if
-   vulnerabilities are discovered in the currently used ones.
+   careful protection.  Private keys are required to not be stored in
+   plaintext in configuration files or source code.  It is strongly
+   recommended that private keys be generated and stored within a
+   Hardware Security Module (HSM) or an equivalent isolated secure
+   environment (e.g., TEE, Secure Enclave) that prevents key
+   exfiltration.  Implementers are encouraged to have a defined policy
+   for periodic key rotation (e.g., annually or upon suspected
+   compromise).  Implementations are encouraged to also be designed with
+   "crypto-agility" in mind.  Hard-coding specific algorithms or curves
+   (e.g., ES256K) is discouraged, and the system is required to be
+   capable of upgrading to new signing algorithms if vulnerabilities are
+   discovered in the currently used ones.
 
    Message Signature and Verification Best Practices: Improper
    validation of JWS [RFC7515] or COSE [RFC8152] signatures can lead to
    severe vulnerabilities.  When verifying a signature, the alg
-   (algorithm) header parameter should be checked against an explicit
-   allow-list of acceptable algorithms maintained by the verifier.  Any
-   message received with an alg value not on this list should be
+   (algorithm) header parameter is required to be checked against an
+   explicit allow-list of acceptable algorithms maintained by the
+   verifier.  Any message received with an alg value not on this list is
    rejected.  In particular, it is critical that the alg:none value is
    rejected.  This guide recommends that the signature be applied to the
    canonicalized form of the entire message payload to prevent
-   ambiguity.  The implementation guide should provide clear test
-   vectors showing exactly which bytes are included in the signature
+   ambiguity.  The implementation guide provides clear test vectors
+   showing exactly which bytes are included in the signature
    computation.  Signers are encouraged to include a Key ID (e.g., kid
    in JWS) in the protected header to aid the verifier in selecting the
    correct public key for validation, especially during and after key
@@ -608,18 +610,18 @@ Table of Contents
    Protocol-Level Attack Mitigation: The stateful nature of the 2-Phase
    Commit (2PC) protocol can be exploited for denial-of-service (DoS) or
    replay attacks.  All state-changing messages (especially
-   TransferRequest) should include a unique identifier (e.g., a jti
-   claim) and a timestamp (e.g., an iat claim).  A Beneficiary Gateway
-   should maintain a record of recently processed jti values to detect
-   and reject replayed messages.  Implementations should enforce strict
+   TransferRequest) are required to include a unique identifier (e.g., a
+   jti claim) and a timestamp (e.g., an iat claim).  A Beneficiary
+   Gateway maintains a record of recently processed jti values to detect
+   and reject replayed messages.  Implementations enforces strict
    timeouts for 2PC transactions.  A Beneficiary Gateway that receives a
-   Phase 1 (Prepare) request should release any locks or reserved
-   resources if the transaction is not finalized (Committed or Aborted)
-   within a predefined, reasonable timeframe (e.g., 5 minutes).  This
-   prevents resource exhaustion DoS attacks.  Gateway endpoints are
-   encouraged to implement rate limiting based on source IP, client
-   certificate, or other identifiable metrics to mitigate volumetric DoS
-   and brute-force attacks.
+   Phase 1 (Prepare) request releases any locks or reserved resources if
+   the transaction is not finalized (Committed or Aborted) within a
+   predefined, reasonable timeframe (e.g., 5 minutes).  This prevents
+   resource exhaustion DoS attacks.  Gateway endpoints are encouraged to
+   implement rate limiting based on source IP, client certificate, or
+   other identifiable metrics to mitigate volumetric DoS and brute-force
+   attacks.
 
 9.  Privacy Considerations
 
@@ -633,23 +635,23 @@ Table of Contents
 
    Data Minimization: It's good practice for a gateway to avoid sending
    the complete set of PII it holds about an originator in every
-   request.  Instead, the TransferRequest should ideally only contain
-   the minimum set of PII fields that are strictly required by the
+   request.  Instead, the TransferRequest ideally only contains the
+   minimum set of PII fields that are strictly required by the
    Beneficiary Gateway's jurisdiction or its stated compliance policy.
    A policy-driven approach is recommended to dynamically determine the
    appropriate data payload for each transfer, thereby limiting the
    privacy risk and exposure in every transaction.
 
-   Privacy-preserving Logging: Implementations should aim to ensure
-   privacy-preserving logging.  Sensitive PII (such as customer names,
-   residential addresses, or national identification numbers) should not
-   be written in plaintext to any general-purpose application, debug, or
-   INFO level logs.  Traceability and debugging can be achieved using
+   Privacy-preserving Logging: Implementations are required to aim to
+   ensure privacy-preserving logging.  Sensitive PII (such as customer
+   names, residential addresses, or national identification numbers) is
+   not written in plaintext to any general-purpose application, debug,
+   or INFO level logs.  Traceability and debugging can be achieved using
    non-sensitive correlation identifiers, such as the jti of the
-   TransferRequest.  Furthermore, any PII received should be subject to
-   purpose binding (used only for the compliance check it was intended
-   for) and storage limitation (securely deleted after the mandated
-   legal retention period has expired).
+   TransferRequest.  Furthermore, any PII received is subject to purpose
+   binding (used only for the compliance check it was intended for) and
+   storage limitation (securely deleted after the mandated legal
+   retention period has expired).
 
    Transaction Linkability and Metadata Protection: Even when the PII
    payload is encrypted (e.g., using JWE), the metadata of the SATP
