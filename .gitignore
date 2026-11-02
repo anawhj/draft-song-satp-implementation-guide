@@ -1,4 +1,3 @@
-*.html
 *.pdf
 *.redxml
 *.swp
@@ -16,7 +15,6 @@
 /versioned/
 Gemfile.lock
 archive.json
-draft-song-satp-implementation-guide.xml
 package-lock.json
 report.xml
 !requirements.txt

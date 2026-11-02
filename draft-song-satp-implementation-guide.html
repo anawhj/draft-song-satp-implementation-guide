@@ -1,0 +1,2671 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Secure Asset Transfer Protocol (SATP) Implementation Guide</title>
+<meta content="Hyojin Song" name="author">
+<meta content="Yong-Geun Hong" name="author">
+<meta content="GukSik Jeong" name="author">
+<meta content="Thomas Hardjono" name="author">
+<meta content="
+       This document provides non-normative implementation guidance for the Secure
+Asset Transfer Protocol (SATP). It describes a small, independent peer
+implementation and reproducible tests for evaluating protocol behavior and
+interoperability. It relates Core processing to Setup and Artefacts Registry
+proposals, while distinguishing published requirements from experimental
+implementation choices. The guide
+addresses transport mappings, message protection, asset-state observation,
+failure handling, and reporting of specification ambiguities. It does not
+define a new protocol, certify an implementation, or claim completed
+interoperability experiments. 
+    " name="description">
+<meta content="xml2rfc 3.35.0" name="generator">
+<meta content="Gateway" name="keyword">
+<meta content="Digital asset network" name="keyword">
+<meta content="Asset transfer" name="keyword">
+<meta content="Interoperability testing" name="keyword">
+<meta content="draft-song-satp-implementation-guide-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.35.0
+    Python 3.10.12
+    ConfigArgParse 1.9.0
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.3
+    natsort 8.4.0
+    platformdirs 4.12.4
+    pycountry 26.2.16
+    PyYAML 6.0.3
+    requests 2.34.2
+    wcwidth 0.9.4
+-->
+<link href="draft-song-satp-implementation-guide.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">SATP Implementation Guide</td>
+<td class="right">November 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Song, et al.</td>
+<td class="center">Expires 6 May 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Secure Asset Transfer Protocol</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-song-satp-implementation-guide-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-11" class="published">November 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-05-06">6 May 2027</time></dd>
+<dt class="label-authors">Authors:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">H. Song</div>
+<div class="org">Seoul National Univ.</div>
+</div>
+<div class="author">
+      <div class="author-name">Y.-G. Hong</div>
+<div class="org">Daejeon Univ.</div>
+</div>
+<div class="author">
+      <div class="author-name">G. Jeong</div>
+<div class="org">TTA</div>
+</div>
+<div class="author">
+      <div class="author-name">T. Hardjono</div>
+<div class="org">MIT</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Secure Asset Transfer Protocol (SATP) Implementation Guide</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This document provides non-normative implementation guidance for the Secure
+Asset Transfer Protocol (SATP). It describes a small, independent peer
+implementation and reproducible tests for evaluating protocol behavior and
+interoperability. It relates Core processing to Setup and Artefacts Registry
+proposals, while distinguishing published requirements from experimental
+implementation choices. The guide
+addresses transport mappings, message protection, asset-state observation,
+failure handling, and reporting of specification ambiguities. It does not
+define a new protocol, certify an implementation, or claim completed
+interoperability experiments.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://anawhj.github.io/draft-song-satp-implementation-guide/draft-song-satp-implementation-guide.html">https://anawhj.github.io/draft-song-satp-implementation-guide/draft-song-satp-implementation-guide.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-song-satp-implementation-guide/">https://datatracker.ietf.org/doc/draft-song-satp-implementation-guide/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">
+        Discussion of this document takes place on the
+        Secure Asset Transfer Protocol  mailing list (<span><a href="mailto:sat@ietf.org">mailto:sat@ietf.org</a></span>),
+        which is archived at <span><a href="https://mailarchive.ietf.org/arch/browse/sat/">https://mailarchive.ietf.org/arch/browse/sat/</a></span>.
+        Subscribe at <span><a href="https://www.ietf.org/mailman/listinfo/sat/">https://www.ietf.org/mailman/listinfo/sat/</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+<p id="section-note.1-4">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/anawhj/draft-song-satp-implementation-guide">https://github.com/anawhj/draft-song-satp-implementation-guide</a></span>.<a href="#section-note.1-4" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 5 May 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.1">
+                <p id="section-toc.1-1.1.2.1.1" class="keepWithNext"><a href="#section-1.1" class="auto internal xref">1.1</a>.  <a href="#name-scope-and-limitations" class="internal xref">Scope and Limitations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1.2.2">
+                <p id="section-toc.1-1.1.2.2.1" class="keepWithNext"><a href="#section-1.2" class="auto internal xref">1.2</a>.  <a href="#name-specification-baseline-and-" class="internal xref">Specification Baseline and Pending Changes</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-terminology" class="internal xref">Conventions and Terminology</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-implementation-architecture" class="internal xref">Implementation Architecture</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-separation-of-responsibilit" class="internal xref">Separation of Responsibilities</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-network-adapter-and-journal" class="internal xref">Network Adapter and Journal</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-core-protocol-processing" class="internal xref">Core Protocol Processing</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-successful-bilateral-transf" class="internal xref">Successful Bilateral Transfer</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-validation-and-cryptographi" class="internal xref">Validation and Cryptographic Processing</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-errors-abort-and-uncertain-" class="internal xref">Errors, Abort, and Uncertain Outcomes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-clarifications-to-track" class="internal xref">Clarifications to Track</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-transport-mappings-and-mess" class="internal xref">Transport Mappings and Message Representation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-published-http-baseline" class="internal xref">Published HTTP Baseline</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-experimental-grpc-and-herme" class="internal xref">Experimental gRPC and Hermes Compatibility</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-other-encodings" class="internal xref">Other Encodings</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-setup-stage-implementation" class="internal xref">Setup Stage Implementation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-transfer-context-and-asset-" class="internal xref">Transfer Context and Asset Binding</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.2">
+                <p id="section-toc.1-1.6.2.2.1"><a href="#section-6.2" class="auto internal xref">6.2</a>.  <a href="#name-a-minimal-setup-interface" class="internal xref">A Minimal Setup Interface</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.3">
+                <p id="section-toc.1-1.6.2.3.1"><a href="#section-6.3" class="auto internal xref">6.3</a>.  <a href="#name-checking-entry-into-core" class="internal xref">Checking Entry into Core</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.4">
+                <p id="section-toc.1-1.6.2.4.1"><a href="#section-6.4" class="auto internal xref">6.4</a>.  <a href="#name-consistency-expiry-and-setu" class="internal xref">Consistency, Expiry, and Setup Tests</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-artefacts-registry-integrat" class="internal xref">Artefacts Registry Integration</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.1">
+                <p id="section-toc.1-1.7.2.1.1"><a href="#section-7.1" class="auto internal xref">7.1</a>.  <a href="#name-transport-authentication-an" class="internal xref">Transport, Authentication, and Trust</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.2">
+                <p id="section-toc.1-1.7.2.2.1"><a href="#section-7.2" class="auto internal xref">7.2</a>.  <a href="#name-records-versions-and-caches" class="internal xref">Records, Versions, and Caches</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7.2.3">
+                <p id="section-toc.1-1.7.2.3.1"><a href="#section-7.3" class="auto internal xref">7.3</a>.  <a href="#name-errors-and-registry-tests" class="internal xref">Errors and Registry Tests</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-interoperability-profiles-a" class="internal xref">Interoperability Profiles and Test Method</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-three-separate-assessments" class="internal xref">Three Separate Assessments</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-test-case-structure-and-obs" class="internal xref">Test Case Structure and Observations</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.3">
+                <p id="section-toc.1-1.8.2.3.1"><a href="#section-8.3" class="auto internal xref">8.3</a>.  <a href="#name-minimum-coverage" class="internal xref">Minimum Coverage</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.4">
+                <p id="section-toc.1-1.8.2.4.1"><a href="#section-8.4" class="auto internal xref">8.4</a>.  <a href="#name-both-roles-and-independent-" class="internal xref">Both Roles and Independent Oracles</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-open-source-implementation-" class="internal xref">Open Source Implementation and Development Sequence</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.1">
+                <p id="section-toc.1-1.9.2.1.1"><a href="#section-9.1" class="auto internal xref">9.1</a>.  <a href="#name-initial-counterpart-and-imp" class="internal xref">Initial Counterpart and Implementation Status</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.2">
+                <p id="section-toc.1-1.9.2.2.1"><a href="#section-9.2" class="auto internal xref">9.2</a>.  <a href="#name-language-and-development-en" class="internal xref">Language and Development Environment</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.3">
+                <p id="section-toc.1-1.9.2.3.1"><a href="#section-9.3" class="auto internal xref">9.3</a>.  <a href="#name-incremental-development-gat" class="internal xref">Incremental Development Gates</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.4">
+                <p id="section-toc.1-1.9.2.4.1"><a href="#section-9.4" class="auto internal xref">9.4</a>.  <a href="#name-reproducibility-and-revisio" class="internal xref">Reproducibility and Revision Tracking</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.1">
+                <p id="section-toc.1-1.10.2.1.1"><a href="#section-10.1" class="auto internal xref">10.1</a>.  <a href="#name-identity-keys-and-represent" class="internal xref">Identity, Keys, and Representation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.2">
+                <p id="section-toc.1-1.10.2.2.1"><a href="#section-10.2" class="auto internal xref">10.2</a>.  <a href="#name-state-replay-and-irreversib" class="internal xref">State, Replay, and Irreversible Actions</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10.2.3">
+                <p id="section-toc.1-1.10.2.3.1"><a href="#section-10.3" class="auto internal xref">10.3</a>.  <a href="#name-exposure-and-availability" class="internal xref">Exposure and Availability</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#section-11" class="auto internal xref">11</a>. <a href="#name-privacy-considerations" class="internal xref">Privacy Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#section-12" class="auto internal xref">12</a>. <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.13">
+            <p id="section-toc.1-1.13.1"><a href="#section-13" class="auto internal xref">13</a>. <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.14">
+            <p id="section-toc.1-1.14.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-items-for-subsequent-revisi" class="internal xref">Items for Subsequent Revisions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.15">
+            <p id="section-toc.1-1.15.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.16">
+            <p id="section-toc.1-1.16.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-authors-addresses" class="internal xref">Authors' Addresses</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction-doc">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">SATP coordinates asset transfers between gateways representing different
+asset networks. <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span> supplies the architectural context and
+<span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span> defines the Core exchange. Independent implementations help
+test whether the specifications provide enough detail for different
+developers to reach compatible behavior.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">This guide supports that work with implementation boundaries, observable
+state transitions, and reproducible test scenarios. Its initial target is
+a small peer that can exercise both sides of a bilateral transfer against
+another implementation, including Hyperledger Cacti SATP Hermes. Such a
+peer can expose ambiguous requirements without providing the operational
+capabilities expected of a production gateway.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">This revision focuses on implementing the preparation described in
+<span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> and integrating the artefact services in <span>[<a href="#REGISTRY" class="cite xref">REGISTRY</a>]</span>. These
+documents have separate scopes and revision histories. Their inclusion
+here does not make a particular Setup or Registry implementation
+mandatory for Core. An experiment should identify the specifications
+and subsets it exercises.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4"><a href="#implementation-scope" class="auto internal xref">Figure 1</a> illustrates the logical scope covered by this
+guide. The two application-gateway-network stacks support a bilateral
+Core exchange, with preparation and supporting services shown separately.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<span id="name-conceptual-scope-of-satp-im"></span><div id="implementation-scope">
+<figure id="figure-1">
+        <div id="section-1-5.1">
+          <div class="alignLeft art-svg artwork" id="section-1-5.1.1">
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny" viewBox="0 0 1020 630" width="1020" height="630">
+              <title>Conceptual scope of SATP implementation guidance</title>
+              <desc>Two application, gateway and network stacks coordinate a transfer context and exchange Core asset-transfer messages. An Artefacts Registry supports Setup through API3 lookups.</desc>
+              <text x="150" y="22" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black" font-weight="bold">Origin side</text>
+              <text x="870" y="22" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black" font-weight="bold">Destination side</text>
+              <rect x="40" y="38" width="220" height="65" fill="white" stroke="black" stroke-width="2"></rect>
+              <rect x="760" y="38" width="220" height="65" fill="white" stroke="black" stroke-width="2"></rect>
+              <text x="150" y="64" font-family="sans-serif" font-size="20" text-anchor="middle" fill="black" font-weight="bold">Application App1</text>
+              <text x="150" y="89" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">Intent / preparation</text>
+              <text x="870" y="64" font-family="sans-serif" font-size="20" text-anchor="middle" fill="black" font-weight="bold">Application App2</text>
+              <text x="870" y="89" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">Intent / preparation</text>
+              <path d="M 260 76 L 760 76" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8 6"></path>
+              <polygon points="260,76 270,71 270,81" fill="black"></polygon>
+              <polygon points="760,76 750,71 750,81" fill="black"></polygon>
+              <text x="510" y="61" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black">Transfer-context coordination</text>
+              <rect x="370" y="132" width="280" height="68" fill="white" stroke="black" stroke-width="2"></rect>
+              <text x="510" y="159" font-family="sans-serif" font-size="21" text-anchor="middle" fill="black" font-weight="bold">Artefacts Registry</text>
+              <text x="510" y="186" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">TARs / profiles / identifiers</text>
+              <path d="M 150 103 L 150 265" fill="none" stroke="black" stroke-width="2"></path>
+              <polygon points="150,103 145,113 155,113" fill="black"></polygon>
+              <polygon points="150,265 145,255 155,255" fill="black"></polygon>
+              <path d="M 870 103 L 870 265" fill="none" stroke="black" stroke-width="2"></path>
+              <polygon points="870,103 865,113 875,113" fill="black"></polygon>
+              <polygon points="870,265 865,255 875,255" fill="black"></polygon>
+              <text x="133" y="174" font-family="sans-serif" font-size="17" text-anchor="end" fill="black">API1</text>
+              <text x="133" y="197" font-family="sans-serif" font-size="16" text-anchor="end" fill="black">Initiate /</text>
+              <text x="133" y="219" font-family="sans-serif" font-size="16" text-anchor="end" fill="black">status</text>
+              <text x="887" y="174" font-family="sans-serif" font-size="17" text-anchor="start" fill="black">API1</text>
+              <text x="887" y="197" font-family="sans-serif" font-size="16" text-anchor="start" fill="black">Initiate /</text>
+              <text x="887" y="219" font-family="sans-serif" font-size="16" text-anchor="start" fill="black">status</text>
+              <path d="M 215 265 L 215 224 L 440 224 L 440 200" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8 6"></path>
+              <polygon points="215,265 210,255 220,255" fill="black"></polygon>
+              <polygon points="440,200 435,210 445,210" fill="black"></polygon>
+              <path d="M 805 265 L 805 224 L 580 224 L 580 200" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8 6"></path>
+              <polygon points="805,265 800,255 810,255" fill="black"></polygon>
+              <polygon points="580,200 575,210 585,210" fill="black"></polygon>
+              <text x="320" y="249" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">API3 lookup</text>
+              <text x="700" y="249" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">API3 lookup</text>
+              <rect x="40" y="265" width="220" height="130" fill="white" stroke="black" stroke-width="2"></rect>
+              <rect x="760" y="265" width="220" height="130" fill="white" stroke="black" stroke-width="2"></rect>
+              <text x="150" y="302" font-family="sans-serif" font-size="22" text-anchor="middle" fill="black" font-weight="bold">Gateway G1</text>
+              <text x="150" y="336" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black">Core peer</text>
+              <text x="870" y="302" font-family="sans-serif" font-size="22" text-anchor="middle" fill="black" font-weight="bold">Gateway G2</text>
+              <text x="870" y="336" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black">Core peer</text>
+              <path d="M 260 292 L 760 292" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8 6"></path>
+              <polygon points="260,292 270,287 270,297" fill="black"></polygon>
+              <polygon points="760,292 750,287 750,297" fill="black"></polygon>
+              <text x="510" y="278" font-family="sans-serif" font-size="18" text-anchor="middle" fill="black">Context / gateway binding (before Core)</text>
+              <path d="M 260 353 L 760 353" fill="none" stroke="black" stroke-width="2"></path>
+              <polygon points="260,353 270,348 270,358" fill="black"></polygon>
+              <polygon points="760,353 750,348 750,358" fill="black"></polygon>
+              <text x="510" y="338" font-family="sans-serif" font-size="19" text-anchor="middle" fill="black">Asset-transfer exchange (Stages 1-3)</text>
+              <path d="M 150 395 L 150 487" fill="none" stroke="black" stroke-width="2"></path>
+              <polygon points="150,395 145,405 155,405" fill="black"></polygon>
+              <polygon points="150,487 145,477 155,477" fill="black"></polygon>
+              <path d="M 870 395 L 870 487" fill="none" stroke="black" stroke-width="2"></path>
+              <polygon points="870,395 865,405 875,405" fill="black"></polygon>
+              <polygon points="870,487 865,477 875,477" fill="black"></polygon>
+              <text x="168" y="443" font-family="sans-serif" font-size="17" text-anchor="start" fill="black">Asset operations</text>
+              <text x="852" y="443" font-family="sans-serif" font-size="17" text-anchor="end" fill="black">Asset operations</text>
+              <rect x="40" y="487" width="220" height="88" fill="white" stroke="black" stroke-width="2"></rect>
+              <rect x="760" y="487" width="220" height="88" fill="white" stroke="black" stroke-width="2"></rect>
+              <text x="150" y="520" font-family="sans-serif" font-size="18" text-anchor="middle" fill="black" font-weight="bold">Asset network NW1</text>
+              <text x="150" y="550" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">Assets / ledger state</text>
+              <text x="870" y="520" font-family="sans-serif" font-size="18" text-anchor="middle" fill="black" font-weight="bold">Asset network NW2</text>
+              <text x="870" y="550" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">Assets / ledger state</text>
+              <path d="M 280 516 L 350 516" fill="none" stroke="black" stroke-width="2"></path>
+              <text x="366" y="523" font-family="sans-serif" font-size="17" text-anchor="start" fill="black">Core or local network interaction</text>
+              <path d="M 280 551 L 350 551" fill="none" stroke="black" stroke-width="2" stroke-dasharray="8 6"></path>
+              <text x="366" y="558" font-family="sans-serif" font-size="17" text-anchor="start" fill="black">Preparation or supporting lookup</text>
+              <text x="510" y="606" font-family="sans-serif" font-size="17" text-anchor="middle" fill="black">Logical relationships; not a required execution sequence.</text>
+            </svg><a href="#section-1-5.1.1" class="pilcrow">¶</a>
+</div>
+</div>
+<figcaption><a href="#figure-1" class="selfRef">Figure 1</a>:
+<a href="#name-conceptual-scope-of-satp-im" class="selfRef">Conceptual scope of SATP implementation guidance</a>
+        </figcaption></figure>
+</div>
+<p id="section-1-6">Preparation spans the applications, their networks, and the gateway pair:
+<span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> explains transfer-context establishment, asset preparation,
+and gateway binding before Core starts. Side lookups through API3 obtain
+artefacts described by <span>[<a href="#REGISTRY" class="cite xref">REGISTRY</a>]</span>; the registry does not relay the
+gateway-to-gateway Core exchange. One registry is shown for readability,
+but deployments may use different registries for different artefacts.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">The links express responsibilities and relationships, not a complete
+message sequence. Dashed links in the graphical rendering denote
+preparation or supporting lookups. These interactions support Core
+entry; they are not additional Core stages.
+Application-to-network preparation is summarized by the application
+labels rather than drawn as additional links. The experimental test
+harness can drive and observe these interfaces as described later.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<div id="scope">
+<section id="section-1.1">
+        <h3 id="name-scope-and-limitations">
+<a href="#section-1.1" class="section-number selfRef">1.1. </a><a href="#name-scope-and-limitations" class="section-name selfRef">Scope and Limitations</a>
+        </h3>
+<p id="section-1.1-1">The initial implementation scope is a direct transfer between two
+gateways, one test asset per transfer, and controlled network
+adapters. The test peer should implement both sender and receiver roles.
+It should support invalid-input and failure injection as well as
+successful transfers.<a href="#section-1.1-1" class="pilcrow">¶</a></p>
+<p id="section-1.1-2">Production operations, high availability, general gateway discovery,
+complete regulatory workflows, arbitrary ledger integrations, and
+performance qualification are outside the initial scope. Mock networks
+can demonstrate decisions made by the peer, but cannot establish a real
+ledger's finality or cross-system economic guarantees.<a href="#section-1.1-2" class="pilcrow">¶</a></p>
+<p id="section-1.1-3">Chaining bilateral transfers does not by itself establish atomicity over
+an entire multi-hop route. An implementation studying that case should
+identify its additional coordination protocol and failure assumptions.
+This guide does not define that protocol. Similarly, a successful
+two-phase exchange under stated assumptions does not prove unconditional
+termination or automatic recovery after every possible failure.<a href="#section-1.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="baseline">
+<section id="section-1.2">
+        <h3 id="name-specification-baseline-and-">
+<a href="#section-1.2" class="section-number selfRef">1.2. </a><a href="#name-specification-baseline-and-" class="section-name selfRef">Specification Baseline and Pending Changes</a>
+        </h3>
+<p id="section-1.2-1">The following revisions form the documentary baseline for this draft.
+The section numbers cited in this guide refer to these revisions.<a href="#section-1.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Subject</th>
+              <th class="text-left" rowspan="1" colspan="1">Baseline</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Core</td>
+              <td class="text-left" rowspan="1" colspan="1">draft-ietf-satp-core-17</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Architecture</td>
+              <td class="text-left" rowspan="1" colspan="1">draft-ietf-satp-architecture-10</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Setup</td>
+              <td class="text-left" rowspan="1" colspan="1">draft-avrilionis-satp-setup-stage-05</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Registry</td>
+              <td class="text-left" rowspan="1" colspan="1">draft-avrilionis-satp-artefacts-registry-01</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-1.2-3">Core revision -17 specifies an HTTPS and JSON baseline. The October 2026
+discussion in <span>[<a href="#TRANSPORT-DISCUSSION" class="cite xref">TRANSPORT-DISCUSSION</a>]</span> proposes separating transport
+properties from gRPC and HTTP mappings. That discussion records a change
+plan, not an already published replacement for the requirements of
+revision -17. Guidance about transport separation in this document
+anticipates that direction without defining a standard gRPC binding.<a href="#section-1.2-3" class="pilcrow">¶</a></p>
+<p id="section-1.2-4">When a later revision is selected, implementers should update the
+requirements-to-test mapping and record changes in accepted messages,
+security processing, and failure behavior. An editor's copy should be
+identified by a commit, not merely by a moving "latest" URL.<a href="#section-1.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="conventions">
+<section id="section-2">
+      <h2 id="name-conventions-and-terminology">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-terminology" class="section-name selfRef">Conventions and Terminology</a>
+      </h2>
+<p id="section-2-1">This is an Informational, non-normative guide. Lowercase words such as
+"should" express implementation advice. Requirements belong to the
+referenced specifications; a summary or example here does not modify
+them. A conflict should be resolved through the specification's authors
+and working group rather than by silently treating this guide as the
+authoritative definition.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">The terms gateway, origin network, destination network, and commitment
+agreement follow <span>[<a href="#SATarch" class="cite xref">SATarch</a>]</span>. In an asset transfer, G1 is the sending
+gateway and G2 is the receiving gateway. A single implementation can
+perform either role in different transfers.<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">The following terms describe the test environment:<a href="#section-2-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-2-4.1">
+          <p id="section-2-4.1.1">Independent peer: an implementation whose protocol decisions are
+developed from the specification independently of the counterpart's
+state-machine code. A different programming language alone does not
+establish this independence.<a href="#section-2-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.2">
+          <p id="section-2-4.2.1">Test harness: the driver that supplies inputs, injects failures,
+observes peer and backend effects, and evaluates expected outcomes.<a href="#section-2-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.3">
+          <p id="section-2-4.3.1">Test profile: a versioned, locally named configuration of specification
+revisions, supported features, transport, and security choices. This
+guide does not register profile names or a discovery format.<a href="#section-2-4.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.4">
+          <p id="section-2-4.4.1">Ledger adapter: the boundary between a gateway's protocol processing
+and the represented network's asset operations and evidence.<a href="#section-2-4.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.5">
+          <p id="section-2-4.5.1">Journal: the local record of accepted inputs, protocol decisions,
+backend operation identifiers, and observed outcomes.<a href="#section-2-4.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-2-4.6">
+          <p id="section-2-4.6.1">Inconclusive outcome: a result for which available evidence cannot
+establish the expected decision or backend effect.<a href="#section-2-4.6.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-2-5">The Transfer Context (TC), TCID, Tokenized Asset or Artefact Record
+(TAR), and Digitized Asset Record (DAR) are used in the context of
+<span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> and <span>[<a href="#REGISTRY" class="cite xref">REGISTRY</a>]</span>. Their distinct roles are discussed in
+<a href="#setup-context" class="auto internal xref">Section 6.1</a>.<a href="#section-2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="implementation-architecture">
+<section id="section-3">
+      <h2 id="name-implementation-architecture">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-implementation-architecture" class="section-name selfRef">Implementation Architecture</a>
+      </h2>
+<div id="implementation-components">
+<section id="section-3.1">
+        <h3 id="name-separation-of-responsibilit">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-separation-of-responsibilit" class="section-name selfRef">Separation of Responsibilities</a>
+        </h3>
+<p id="section-3.1-1">A small implementation can use the following components without adopting
+a large gateway framework.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+          <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Component</th>
+              <th class="text-left" rowspan="1" colspan="1">Responsibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Core engine</td>
+              <td class="text-left" rowspan="1" colspan="1">Validate permitted transitions and decide protocol actions.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Codec and protection</td>
+              <td class="text-left" rowspan="1" colspan="1">Decode messages, verify signatures and hashes, and encode outputs.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Transport adapter</td>
+              <td class="text-left" rowspan="1" colspan="1">Map delivery, responses, metadata, and errors to a selected transport.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Ledger adapter</td>
+              <td class="text-left" rowspan="1" colspan="1">Execute and observe network-specific asset operations.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Context and journal store</td>
+              <td class="text-left" rowspan="1" colspan="1">Preserve transfer associations, decisions, and operation evidence.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Preparation modules</td>
+              <td class="text-left" rowspan="1" colspan="1">Provide Setup orchestration and Registry access.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Test harness</td>
+              <td class="text-left" rowspan="1" colspan="1">Drive independent peers and evaluate protocol and asset effects.</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-3.1-3">The Core engine should not depend on a particular HTTP handler or RPC
+framework. A useful local API accepts validated input and current state,
+then produces a proposed next state and explicit actions. The surrounding
+code records decisions, executes backend actions, and records their
+outcomes. This design makes the same decision logic testable without a
+network connection.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.1-4">Separating actions does not make a local database and a remote ledger
+atomic. The adapter should retain backend operation identifiers and allow
+the harness to query whether an operation happened when an outcome is
+uncertain. Tests should include a crash after backend execution but
+before the journal records success.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ledger-journal">
+<section id="section-3.2">
+        <h3 id="name-network-adapter-and-journal">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-network-adapter-and-journal" class="section-name selfRef">Network Adapter and Journal</a>
+        </h3>
+<p id="section-3.2-1">For the initial experiment, the adapter should expose asset inspection,
+source locking, source extinguishing, destination creation under gateway
+control, and final assignment to the beneficiary. The selected network
+determines the actual operations and proofs. Any cleanup operation should
+state its preconditions and irreversible boundaries.<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">The journal should associate the TCID, Session ID, gateway roles, asset
+identifiers, message type, relevant sequence and hash information,
+signature verification result, backend operation ID, and before/after
+observations. Persisting a decision before sending its corresponding
+message reduces uncertainty, but is not a complete recovery protocol.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-3">The harness should independently inspect backend state rather than rely
+only on the gateway's success response. In the controlled asset model it
+should check that the same transferable value does not become spendable
+by both the originator and beneficiary. Temporary destination assets
+held by G2 should be distinguished from assets available to the final
+beneficiary.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="core-processing">
+<section id="section-4">
+      <h2 id="name-core-protocol-processing">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-core-protocol-processing" class="section-name selfRef">Core Protocol Processing</a>
+      </h2>
+<p id="section-4-1">The implementation should derive wire messages from the selected Core
+revision. The simplified TransferRequest and TransferCommit names used
+in revision -02 of this guide are not a substitute for the messages
+below. Full message schemas and required fields remain defined by
+<span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="core-success">
+<section id="section-4.1">
+        <h3 id="name-successful-bilateral-transf">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-successful-bilateral-transf" class="section-name selfRef">Successful Bilateral Transfer</a>
+        </h3>
+<p id="section-4.1-1">The following sequence summarizes Sections 8 through 10 of <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>.
+Message names are suffixes of the namespace
+<code>urn:ietf:params:satp:core:msgtype:</code>. The state observations are test
+boundaries rather than new wire states.<a href="#section-4.1-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-4.1-2">
+<li id="section-4.1-2.1">
+            <p id="section-4.1-2.1.1">Stage 1 exchanges <code>transfer-proposal-msg</code>, <code>proposal-receipt-msg</code>,
+<code>transfer-commence-msg</code>, and <code>ack-commence-msg</code>, alternating between
+G1 and G2. The peers establish the proposed transfer and its
+commencement.<a href="#section-4.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-2.2">
+            <p id="section-4.1-2.2.1">Stage 2 sends <code>lock-assert-msg</code> from G1 after the source lock. G2
+validates the claim, records it in NW2 as depicted in Core Figure 2,
+and returns <code>assertion-receipt-msg</code>.<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-2.3">
+            <p id="section-4.1-2.3.1">Stage 3 sends <code>commit-prepare-msg</code> from G1. G2 creates the destination
+asset under its own control and sends <code>commit-ready-msg</code>.<a href="#section-4.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-2.4">
+            <p id="section-4.1-2.4.1">G1 extinguishes the source asset and sends <code>commit-final-msg</code> with
+the relevant evidence. G2 verifies it, assigns the destination asset
+to the beneficiary, and returns <code>ack-commit-final-msg</code>.<a href="#section-4.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-4.1-2.5">
+            <p id="section-4.1-2.5.1">G1 records completion and sends <code>commit-transfer-complete-msg</code> to G2.<a href="#section-4.1-2.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-4.1-3">The implementation should compare this sequence against the normative
+field descriptions, not copy draft examples without checking them.
+In particular, creation under G2's control and assignment to the
+beneficiary are distinct observations in this baseline.<a href="#section-4.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="core-validation">
+<section id="section-4.2">
+        <h3 id="name-validation-and-cryptographi">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-validation-and-cryptographi" class="section-name selfRef">Validation and Cryptographic Processing</a>
+        </h3>
+<p id="section-4.2-1">For each message, validation should use that message's own schema and
+the current session state. Useful checks include the authenticated
+counterpart, expected message type and sequence where defined, transfer
+association, applicable expiration, signature, claim format, and relevant
+hashes. A message that decodes successfully can still be invalid in the
+current state.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+<p id="section-4.2-2">The signed-message and cryptographic baseline is described in Section
+5.2 of <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>: peer messages are protected with JWS <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span>,
+with ECDSA P-256 and SHA-256 (ES256 <span>[<a href="#RFC7518" class="cite xref">RFC7518</a>]</span>) as the baseline.
+The standalone burn assertion in Section 10.3 is also signed
+independently; verifying only the enclosing message does not replace
+verification of that claim. The implementation
+should distinguish transport keys, gateway message-signing keys, and
+network evidence keys. A key received in a message is not automatically
+a trusted identity.<a href="#section-4.2-2" class="pilcrow">¶</a></p>
+<p id="section-4.2-3">Hash validation should be field-specific. Proposal Receipt, for example,
+has its own claim-hash and timestamp semantics; the guide does not add a
+previous-message hash to every message. The test profile should specify
+the exact bytes used for each hash and signature, including any
+envelope exclusion, serialization, and encoding rule that needs
+clarification. A semantic JSON comparison is insufficient to establish
+byte-level signature interoperability.<a href="#section-4.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="core-failures">
+<section id="section-4.3">
+        <h3 id="name-errors-abort-and-uncertain-">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-errors-abort-and-uncertain-" class="section-name selfRef">Errors, Abort, and Uncertain Outcomes</a>
+        </h3>
+<p id="section-4.3-1">Core error handling should follow Sections 10.6, 10.7, and 11 of
+<span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>. Protocol failure, an application-requested abort, and a
+connection failure are distinct events. For the -17 HTTP baseline,
+Section 11.3 describes error representations using
+<code>application/problem+json</code> and <span>[<a href="#RFC9457" class="cite xref">RFC9457</a>]</span>, with SATP-specific information.
+These should not be replaced by invented private Core error codes.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<p id="section-4.3-2">An abort ends the session exchange, but its effect on assets depends on
+the point reached. The implementation should evaluate the irreversible
+boundary described in Section 11.5 before attempting cleanup. A timeout
+after extinguishing the source asset does not justify recreating it or
+assuming that the destination assignment failed.<a href="#section-4.3-2" class="pilcrow">¶</a></p>
+<p id="section-4.3-3">Section 10.8 of Core revision -17 does not provide session recovery or
+resumption. The proposed peer can preserve evidence and expose an
+inconclusive outcome for operator diagnosis. Any additional recovery
+exchange should be separately identified and tested as an extension.
+A Hermes recovery facility is not automatically a Core -17 requirement.<a href="#section-4.3-3" class="pilcrow">¶</a></p>
+<p id="section-4.3-4">The initial harness should disable configured application-level retries
+for state-changing operations, document lower-level retry behavior, and
+then test explicitly configured retransmission scenarios. Duplicate
+inputs should be checked before repeating backend effects. This advice
+does not create a retransmission protocol absent from the baseline.<a href="#section-4.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="core-clarifications">
+<section id="section-4.4">
+        <h3 id="name-clarifications-to-track">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-clarifications-to-track" class="section-name selfRef">Clarifications to Track</a>
+        </h3>
+<p id="section-4.4-1">Revision -17 contains points that independent implementations should
+raise for clarification. These include the <code>ack-prepare-msg</code> entry in
+Section 5.3.2 versus <code>commit-ready-msg</code> in Section 10.2, and
+<code>mintAssertionFormat</code> in a field description versus
+<code>mintAssertionClaimFormat</code> in an example. Example syntax and spelling
+also need validation before becoming fixtures.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<p id="section-4.4-2">The exact serialization and hash boundary, and the interaction between
+general lock-release wording in Section 11.2 and the post-commit boundary
+in Section 11.5, deserve explicit review. A test profile can record a
+provisional interpretation to reproduce an experiment, but this guide
+does not settle these specification questions or declare a new wire
+format. Cases affected by unresolved choices should identify that fact
+in their result.<a href="#section-4.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="transport-mappings">
+<section id="section-5">
+      <h2 id="name-transport-mappings-and-mess">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-transport-mappings-and-mess" class="section-name selfRef">Transport Mappings and Message Representation</a>
+      </h2>
+<div id="http-baseline">
+<section id="section-5.1">
+        <h3 id="name-published-http-baseline">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-published-http-baseline" class="section-name selfRef">Published HTTP Baseline</a>
+        </h3>
+<p id="section-5.1-1">For Core revision -17, the HTTP adapter should exercise the specified
+HTTPS POST, TLS 1.3 <span>[<a href="#RFC8446" class="cite xref">RFC8446</a>]</span>, JSON <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span>, and
+<code>application/satp+json</code> behavior, while
+handling the error representation described in <a href="#core-failures" class="auto internal xref">Section 4.3</a>.
+It should retain the distinction between transport delivery, protocol
+acceptance, and completion of a backend operation.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.1-2">The profile should document routing, status handling, response
+correlation, connection timeouts, size limits, credential placement,
+and any use of mutual TLS. It should identify which choices are explicit
+in Core and which need agreement for the experiment. This guide does
+not assign a new standard HTTP endpoint or negotiation mechanism.<a href="#section-5.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="grpc-experiment">
+<section id="section-5.2">
+        <h3 id="name-experimental-grpc-and-herme">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-experimental-grpc-and-herme" class="section-name selfRef">Experimental gRPC and Hermes Compatibility</a>
+        </h3>
+<p id="section-5.2-1">A gRPC experiment should keep the Core domain model separate from its
+service definitions and serialization. The profile should name the
+service methods, unary or streaming behavior, metadata placement,
+deadline and cancellation handling, and status/error mapping. A gRPC
+status should not erase a signed SATP protocol error. Cancellation of a
+call also does not roll back a backend operation already performed.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<p id="section-5.2-2">Native gRPC, gRPC-Web, and Connect are different protocol mappings.
+Native gRPC normally uses HTTP/2; an HTTP/1.1 gRPC-Web endpoint is not
+interchangeable with it. The inspected <span>[<a href="#HERMES" class="cite xref">HERMES</a>]</span> snapshot constructs
+gRPC-Web transports for the Core stages in <code>gateway-orchestrator.ts</code>.
+The adapter should match the actual counterpart's endpoints and protocol.
+That observation is not a claim that Hermes defines the standard binding.<a href="#section-5.2-2" class="pilcrow">¶</a></p>
+<p id="section-5.2-3">The harness should distinguish a Hermes compatibility test from a Core
+-17 HTTP conformance test. It can share the same domain engine, while
+the compatibility adapter records the counterpart's schema, paths,
+metadata, and serialization. Using a supplied <code>.proto</code> file is permitted
+for interoperability, but adopting its state-machine implementation
+would weaken the independence of the test peer.<a href="#section-5.2-3" class="pilcrow">¶</a></p>
+<p id="section-5.2-4">The inspected Hermes <code>jws-interceptors.ts</code> signs Protobuf binary content
+and carries the JWS in the <code>satp-signature</code> header. Cross-language
+fixtures should therefore establish the exact signed bytes before a
+full transfer is attempted. <span>[<a href="#PROTO-SERIALIZATION" class="cite xref">PROTO-SERIALIZATION</a>]</span> explains why
+deterministic Protobuf output is not a canonical representation across
+all schemas, runtimes, and changes. Re-encoding received data can change
+the bytes used in signature verification.<a href="#section-5.2-4" class="pilcrow">¶</a></p>
+<p id="section-5.2-5">The experiment should cover default and absent values, unknown fields,
+maps, byte fields, and JSON-to-Protobuf conversion. A decision to use a
+particular canonical representation is a mapping choice that needs
+agreement; this guide does not silently replace the counterpart's
+representation with JCS. JCS requirements for Registry are discussed
+separately in <a href="#registry-security" class="auto internal xref">Section 7.1</a>.<a href="#section-5.2-5" class="pilcrow">¶</a></p>
+<p id="section-5.2-6">gRPC includes retry mechanisms <span>[<a href="#GRPC-RETRY" class="cite xref">GRPC-RETRY</a>]</span>; selecting it does not
+provide exactly-once application effects. Retransmission and duplicate
+suppression remain explicit subjects for the harness.<a href="#section-5.2-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="other-encodings">
+<section id="section-5.3">
+        <h3 id="name-other-encodings">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-other-encodings" class="section-name selfRef">Other Encodings</a>
+        </h3>
+<p id="section-5.3-1">CBOR/COSE and other representation experiments should have separate
+mapping identifiers, schemas, and test vectors. They are not presented
+here as interchangeable alternatives to the -17 JSON/JWS baseline.
+This revision does not define CBOR integer-key assignments or imply
+that such assignments already exist in Core.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="setup-implementation">
+<section id="section-6">
+      <h2 id="name-setup-stage-implementation">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-setup-stage-implementation" class="section-name selfRef">Setup Stage Implementation</a>
+      </h2>
+<p id="section-6-1"><span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> describes preparation before the Core exchange. An implementation
+should treat this as a separate module whose completion authorizes entry
+into Core. Supporting the Core protocol does not by itself establish
+interoperability with a particular Setup implementation. The functions,
+local records, and additional checks below are implementation suggestions,
+not additional standardized messages or endpoint definitions.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<div id="setup-context">
+<section id="section-6.1">
+        <h3 id="name-transfer-context-and-asset-">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-transfer-context-and-asset-" class="section-name selfRef">Transfer Context and Asset Binding</a>
+        </h3>
+<p id="section-6.1-1">A useful local model separates four identifiers:<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6.1-2.1">
+            <p id="section-6.1-2.1.1">TCID identifies the transfer context linking the transfer intent,
+participants, assets, and gateways.<a href="#section-6.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-2.2">
+            <p id="section-6.1-2.2.1">Session ID identifies a particular Core execution associated with that
+context.<a href="#section-6.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-2.3">
+            <p id="section-6.1-2.3.1">TAR ID references information held by an Artefacts Registry.<a href="#section-6.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-6.1-2.4">
+            <p id="section-6.1-2.4.1">DAR ID identifies an asset record managed by the represented network.<a href="#section-6.1-2.4.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-6.1-3">These identifiers should have separate fields and validation rules. A TAR
+reference does not replace the source network's DAR ownership and transfer
+authorization checks. Similarly, assigning a DAR to a TC during Setup is
+not itself the lock asserted in Core Stage 2. The ledger adapter should
+expose these operations separately so tests can observe the distinction.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<p id="section-6.1-4">Section 2 of <span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> describes creating a context, propagating its ID to
+the beneficiary application, preparing the destination network, binding
+the gateways, and starting Core. Section 4 illustrates multiple sessions
+associated with one context. This example does not define a session
+recovery protocol. An implementation should preserve the association for
+diagnosis without treating a new Session ID as permission to repeat an
+irreversible asset operation. Core recovery limitations remain those of
+the selected revision of <span>[<a href="#SATcore" class="cite xref">SATcore</a>]</span>.<a href="#section-6.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="setup-interface">
+<section id="section-6.2">
+        <h3 id="name-a-minimal-setup-interface">
+<a href="#section-6.2" class="section-number selfRef">6.2. </a><a href="#name-a-minimal-setup-interface" class="section-name selfRef">A Minimal Setup Interface</a>
+        </h3>
+<p id="section-6.2-1">The following names describe a possible experimental interface. They do
+not assign RPC methods, HTTP routes, message schemas, or error codes.
+Some operations belong to applications or network adapters rather than
+to a gateway service; a test driver can coordinate them without changing
+the responsibilities described in <span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span>.<a href="#section-6.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-3">
+          <caption><a href="#table-3" class="selfRef">Table 3</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Suggested operation</th>
+              <th class="text-left" rowspan="1" colspan="1">Local responsibility</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">CreateTC</td>
+              <td class="text-left" rowspan="1" colspan="1">Record transfer intent and return a TCID.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">BindAssets</td>
+              <td class="text-left" rowspan="1" colspan="1">Associate authorized source DARs with that TCID.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">PrepareReceive</td>
+              <td class="text-left" rowspan="1" colspan="1">Record the beneficiary and destination preparation.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">BindGateways</td>
+              <td class="text-left" rowspan="1" colspan="1">Authenticate and record the gateway pair for the TC.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">BeginTransfer</td>
+              <td class="text-left" rowspan="1" colspan="1">Check all prerequisites and associate a Core session.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">QueryStatus</td>
+              <td class="text-left" rowspan="1" colspan="1">Return observed Setup and Core progress with evidence.</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-6.2-3">A concrete experimental profile should specify who can invoke each
+operation, what constitutes successful completion, how duplicates are
+identified, and which actor can cancel an incomplete Setup. It should
+also specify how concurrent updates are serialized. For example, a
+transactional compare-and-set on the local context record can prevent two
+successful BeginTransfer calls from allocating competing active sessions.
+This local mechanism is not a new Core concurrency requirement.<a href="#section-6.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="setup-entry">
+<section id="section-6.3">
+        <h3 id="name-checking-entry-into-core">
+<a href="#section-6.3" class="section-number selfRef">6.3. </a><a href="#name-checking-entry-into-core" class="section-name selfRef">Checking Entry into Core</a>
+        </h3>
+<p id="section-6.3-1">Section 3 of <span>[<a href="#SETUP" class="cite xref">SETUP</a>]</span> gives five prerequisites: an unambiguous context
+held by the originator application; source-network awareness of the
+assets and TC; a gateway pair bound to that TC; beneficiary awareness of
+the incoming assets; and destination-network preparation for that
+beneficiary and TC.<a href="#section-6.3-1" class="pilcrow">¶</a></p>
+<p id="section-6.3-2">The proposed implementation should turn each prerequisite into a separate
+check with an identifiable source of evidence. BeginTransfer should
+evaluate a consistent snapshot of the evidence, authenticated participant
+identities, asset set, and context expiry. It should record which check
+prevented entry, without exposing sensitive beneficiary information.
+An application acknowledgment alone should not be mistaken for a
+network's completed preparation.<a href="#section-6.3-2" class="pilcrow">¶</a></p>
+<p id="section-6.3-3">The following is a synthetic local diagnostic record. Its field names and
+values are not a standardized Transfer Context or a SATP wire payload.<a href="#section-6.3-3" class="pilcrow">¶</a></p>
+<div class="lang-json sourcecode" id="section-6.3-4">
+<pre>
+{
+  "contextHandle": "example-tc-42",
+  "coreSessionHandle": null,
+  "sourceDarHandle": "example-source-asset-42",
+  "tarVersion": 3,
+  "entryChecks": {
+    "originatorContext": true,
+    "sourcePrepared": true,
+    "gatewaysBound": true,
+    "beneficiaryAware": true,
+    "destinationPrepared": false
+  },
+  "eligibleToStart": false
+}
+</pre><a href="#section-6.3-4" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="setup-tests">
+<section id="section-6.4">
+        <h3 id="name-consistency-expiry-and-setu">
+<a href="#section-6.4" class="section-number selfRef">6.4. </a><a href="#name-consistency-expiry-and-setu" class="section-name selfRef">Consistency, Expiry, and Setup Tests</a>
+        </h3>
+<p id="section-6.4-1">As an experimental protection against time-of-check/time-of-use changes,
+the local context should retain the registry identity, TAR ID, selected
+version, content digest, and applicable policy version. Before entering
+Core, the implementation can check that both gateways accepted the same
+snapshot. A changed snapshot should trigger explicit reconsideration of
+Setup rather than silently changing the meaning of an active transfer.
+This proposal does not define a new on-wire negotiation field.<a href="#section-6.4-1" class="pilcrow">¶</a></p>
+<p id="section-6.4-2">An expiry policy should distinguish abandoned preparation from an active
+Core transfer. An elapsed timer or lost response does not demonstrate
+that a remote asset operation failed. In particular, a Setup expiry
+should not automatically unlock or recreate assets after commitment has
+begun. The implementation should retain the relevant evidence and use
+only procedures justified by the Core revision and ledger semantics.<a href="#section-6.4-2" class="pilcrow">¶</a></p>
+<p id="section-6.4-3">Tests should omit each entry prerequisite separately, substitute a
+gateway or beneficiary, submit concurrent contexts for the same DAR,
+repeat BeginTransfer, change a TAR after binding, and restart a gateway
+between preparation and entry. The expected outcomes should include both
+the application-visible decision and the observed network state. These
+tests are proposed coverage; no successful execution is claimed here.<a href="#section-6.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="registry-integration">
+<section id="section-7">
+      <h2 id="name-artefacts-registry-integrat">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-artefacts-registry-integrat" class="section-name selfRef">Artefacts Registry Integration</a>
+      </h2>
+<p id="section-7-1">The API3 registry in <span>[<a href="#REGISTRY" class="cite xref">REGISTRY</a>]</span> provides information used during
+preparation. It should be implemented behind a distinct adapter so that
+registry access, Setup orchestration, and Core state transitions can be
+tested independently. A registry's availability and trust assumptions
+should be explicit in the selected experimental profile.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<div id="registry-security">
+<section id="section-7.1">
+        <h3 id="name-transport-authentication-an">
+<a href="#section-7.1" class="section-number selfRef">7.1. </a><a href="#name-transport-authentication-an" class="section-name selfRef">Transport, Authentication, and Trust</a>
+        </h3>
+<p id="section-7.1-1"><span>[<a href="#REGISTRY" class="cite xref">REGISTRY</a>]</span> specifies JSON API calls over HTTPS, supports GET and POST,
+describes JWS signatures <span>[<a href="#RFC7515" class="cite xref">RFC7515</a>]</span>, and identifies ES256 and JSON
+Canonicalization Scheme (JCS) <span>[<a href="#RFC8785" class="cite xref">RFC8785</a>]</span> support. It also describes
+JWT/OAuth-based client authentication. These are properties of the
+Registry draft: a possible gRPC mapping for Core does not replace API3's
+specified HTTP mapping.<a href="#section-7.1-1" class="pilcrow">¶</a></p>
+<p id="section-7.1-2">A test deployment can select TLS 1.3 and a small, preconfigured set of
+registry identities and client credentials. This choice simplifies
+reproducibility without redefining the Registry draft's transport
+baseline. Certificate validation, accepted signing keys, token issuer
+and audience, operation authorization, and trust in the returned artefact
+should be evaluated separately. A valid registry certificate authenticates
+an endpoint; it does not independently prove asset ownership or the
+truth of a registered statement.<a href="#section-7.1-2" class="pilcrow">¶</a></p>
+<p id="section-7.1-3">For reproducible signature checks, the test profile should record the
+protected headers, exact signed content, canonicalization boundary,
+signature representation, and key selection rules. Sorting JSON object
+keys with a language's default serializer is not a substitute for JCS.
+Tests should verify signatures across implementations using fixed
+inputs and public test keys, including Unicode, numeric, and escaping
+cases. Request authentication and response authenticity should both have
+documented checks; an omitted response-signing detail should be recorded
+as an unresolved mapping question rather than silently invented.<a href="#section-7.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="registry-versioning">
+<section id="section-7.2">
+        <h3 id="name-records-versions-and-caches">
+<a href="#section-7.2" class="section-number selfRef">7.2. </a><a href="#name-records-versions-and-caches" class="section-name selfRef">Records, Versions, and Caches</a>
+        </h3>
+<p id="section-7.2-1">The Registry draft describes append-only history: update registers a new
+version, and the operation named deletion archives a TAR. A test registry
+should retain earlier versions and record archive events rather than
+physically erasing the history used to explain a transfer.<a href="#section-7.2-1" class="pilcrow">¶</a></p>
+<p id="section-7.2-2">A minimal deployment can begin with a pre-populated, read-only registry
+and then add create, version append, and archive operations. This sequence
+allows Setup tests to proceed before a complete registry implementation
+exists. The report should identify the supported subset. For asynchronous
+creation, the adapter should distinguish a temporary receipt from the
+resolved TAR identifier and should avoid starting a dependent transfer
+on an unresolved receipt.<a href="#section-7.2-2" class="pilcrow">¶</a></p>
+<p id="section-7.2-3">The suggested snapshot protection in <a href="#setup-tests" class="auto internal xref">Section 6.4</a> should also govern
+caching. A useful local cache key contains registry identity, TAR ID, and
+version; stored digests and provenance allow a caller to verify that the
+selected record has not changed. Fetching "latest" repeatedly during an
+active transfer risks mixing decisions based on different records.
+Archive, revocation, and policy-change handling should be explicit; a
+pinned historic snapshot is an audit reference, not a reason to ignore a
+new authorization decision.<a href="#section-7.2-3" class="pilcrow">¶</a></p>
+<p id="section-7.2-4">The Setup diagram's registration of a TC does not define a complete TC
+storage API or make a TC equivalent to a TAR. Implementations should
+identify where contexts are persisted and how they reference TARs. If an
+experimental deployment stores both in one database, their data models,
+access rules, and version histories should remain distinguishable.<a href="#section-7.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="registry-tests">
+<section id="section-7.3">
+        <h3 id="name-errors-and-registry-tests">
+<a href="#section-7.3" class="section-number selfRef">7.3. </a><a href="#name-errors-and-registry-tests" class="section-name selfRef">Errors and Registry Tests</a>
+        </h3>
+<p id="section-7.3-1">Several Registry error definitions remain unfinished in revision -01.
+An adapter can use local outcomes such as not-found, unauthorized,
+unsupported-version, invalid-signature, archived, conflict, and
+temporarily-unavailable, provided the test profile identifies them as
+local classifications rather than registered protocol error codes.
+Retries should follow the operation's defined duplicate-handling rules;
+loss of a create response does not establish that creation did not occur.<a href="#section-7.3-1" class="pilcrow">¶</a></p>
+<p id="section-7.3-2">Registry tests should cover rejected credentials, unauthorized version
+append, incorrect registry identity, modified content, mismatched
+digest, stale cache entries, changes between Setup and Core entry,
+repeated create/update, receipt resolution, and historical lookup after
+archive. Tests should observe persisted versions as well as returned
+responses. Draft examples should undergo syntax and semantic review
+before becoming expected-output fixtures: a displayed update response
+is not evidence of a passing version-transition test.<a href="#section-7.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="test-method">
+<section id="section-8">
+      <h2 id="name-interoperability-profiles-a">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-interoperability-profiles-a" class="section-name selfRef">Interoperability Profiles and Test Method</a>
+      </h2>
+<div id="assessments">
+<section id="section-8.1">
+        <h3 id="name-three-separate-assessments">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-three-separate-assessments" class="section-name selfRef">Three Separate Assessments</a>
+        </h3>
+<p id="section-8.1-1">An experiment should distinguish the following assessments. Passing one
+does not establish the others.<a href="#section-8.1-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-4">
+          <caption><a href="#table-4" class="selfRef">Table 4</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Assessment</th>
+              <th class="text-left" rowspan="1" colspan="1">Question</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Specification conformance</td>
+              <td class="text-left" rowspan="1" colspan="1">Does the observed behavior satisfy an identified requirement in the selected revision?</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Counterpart interoperability</td>
+              <td class="text-left" rowspan="1" colspan="1">Can independently developed peers complete the agreed exchange and reject invalid input appropriately?</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Extension experiment</td>
+              <td class="text-left" rowspan="1" colspan="1">Does a separately documented experimental mapping behave as intended?</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-8.1-3">The profile should identify its scope without claiming an IETF
+certification. A Hermes compatibility profile can be useful even if its
+mapping differs from the -17 HTTP baseline, provided that distinction
+is reported. Conversely, an unsupported extension is not evidence that
+the counterpart fails Core conformance.<a href="#section-8.1-3" class="pilcrow">¶</a></p>
+<p id="section-8.1-4">Profile names and test configurations are local artifacts, not
+standardized capability advertisements. Select profiles out of band
+for the initial experiment. An automatic negotiation
+mechanism would need its own specification and downgrade analysis.<a href="#section-8.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="case-structure">
+<section id="section-8.2">
+        <h3 id="name-test-case-structure-and-obs">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-test-case-structure-and-obs" class="section-name selfRef">Test Case Structure and Observations</a>
+        </h3>
+<p id="section-8.2-1">A reusable case should contain a stable identifier, assessment type,
+source requirement or experimental rule, preconditions, stimulus,
+expected peer decision, expected backend effects, observation points,
+and permitted timing assumptions. It should also identify the peer
+roles and the fixture version. An expected result should come from the
+specification or explicitly stated experiment, not solely from a trace
+captured from the counterpart.<a href="#section-8.2-1" class="pilcrow">¶</a></p>
+<p id="section-8.2-2">For a complete transfer, observe both gateways and both networks. For a
+rejection, observe that the forbidden operation did not occur. For an
+uncertain outcome, preserve enough evidence to distinguish a lost
+response from a backend operation that was never executed. Time-bounded
+observations should record their bound rather than imply a universal
+liveness guarantee.<a href="#section-8.2-2" class="pilcrow">¶</a></p>
+<p id="section-8.2-3">Record PASS or FAIL only when the expected result and observations are
+sufficient. Use UNSUPPORTED for an absent feature, INCONCLUSIVE when
+evidence or the specification does not support a decision, and NOT-RUN
+for a planned case. These are local report statuses, not protocol errors.
+A report should state its coverage denominator and excluded cases;
+one aggregate pass percentage is insufficient to describe interoperability.<a href="#section-8.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="minimum-coverage">
+<section id="section-8.3">
+        <h3 id="name-minimum-coverage">
+<a href="#section-8.3" class="section-number selfRef">8.3. </a><a href="#name-minimum-coverage" class="section-name selfRef">Minimum Coverage</a>
+        </h3>
+<p id="section-8.3-1">The following groups provide an initial test inventory. They are
+recommended coverage, not additional SATP conformance requirements.<a href="#section-8.3-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-5">
+          <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Group</th>
+              <th class="text-left" rowspan="1" colspan="1">Representative cases</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Schema and encoding</td>
+              <td class="text-left" rowspan="1" colspan="1">Missing or malformed fields, unsupported versions, numeric and Unicode boundaries.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Protection</td>
+              <td class="text-left" rowspan="1" colspan="1">Wrong signing key, altered content, bad claim proof, incorrect hash input.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Core decisions</td>
+              <td class="text-left" rowspan="1" colspan="1">Successful flow, invalid ordering, wrong session, protocol error, application abort.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Network effects</td>
+              <td class="text-left" rowspan="1" colspan="1">Repeated lock, repeated creation or assignment, backend rejection, conflicting transfers.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Delivery and restart</td>
+              <td class="text-left" rowspan="1" colspan="1">Lost response, duplicate input, disconnect, crash around an irreversible action.</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">Setup and Registry</td>
+              <td class="text-left" rowspan="1" colspan="1">Missing prerequisite, mismatched context, changed TAR version, unauthorized update.</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-8.3-3">Each delivery failure should be injected at a named boundary: before
+receipt, after validation, after backend execution, or after persistence
+but before response delivery. Random fault injection can supplement
+these cases after deterministic tests provide a reproducible baseline.<a href="#section-8.3-3" class="pilcrow">¶</a></p>
+<p id="section-8.3-4">Transport failure tests should include authentication errors, wrong
+protocol mapping, deadline expiry, inconsistent HTTP error status, and
+malformed signed errors. A transport success response alone is not
+evidence of an accepted SATP message or a completed transfer.<a href="#section-8.3-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="both-roles">
+<section id="section-8.4">
+        <h3 id="name-both-roles-and-independent-">
+<a href="#section-8.4" class="section-number selfRef">8.4. </a><a href="#name-both-roles-and-independent-" class="section-name selfRef">Both Roles and Independent Oracles</a>
+        </h3>
+<p id="section-8.4-1">The initial matrix should include independent-peer sender to Hermes
+receiver, and Hermes sender to independent-peer receiver. Two instances
+of the new peer are useful for development but should be reported as
+same-implementation tests. Optional module results should name the
+actual counterpart; self-tests should not become cross-implementation
+claims when Hermes does not support the module.<a href="#section-8.4-1" class="pilcrow">¶</a></p>
+<p id="section-8.4-2">The harness should compare observed results with a small independently
+defined transition model and direct network observations. Sharing wire
+schemas and public fixtures can improve compatibility. Sharing the
+counterpart's state engine or treating every counterpart response as
+the expected answer would reduce the value of an independent test.<a href="#section-8.4-2" class="pilcrow">¶</a></p>
+<p id="section-8.4-3">Failure triage should distinguish a specification ambiguity, a
+counterpart mismatch, a new-peer defect, a transport mismatch, and an
+unsupported feature. Evidence for a specification issue should include
+the relevant revision and section, a minimal input, the competing
+interpretations, the observed effect, and a proposed clarification.
+Avoid assigning implementation blame before identifying the source of
+the expected behavior.<a href="#section-8.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="open-source">
+<section id="section-9">
+      <h2 id="name-open-source-implementation-">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-open-source-implementation-" class="section-name selfRef">Open Source Implementation and Development Sequence</a>
+      </h2>
+<div id="implementation-status">
+<section id="section-9.1">
+        <h3 id="name-initial-counterpart-and-imp">
+<a href="#section-9.1" class="section-number selfRef">9.1. </a><a href="#name-initial-counterpart-and-imp" class="section-name selfRef">Initial Counterpart and Implementation Status</a>
+        </h3>
+<p id="section-9.1-1"><span>[<a href="#HERMES" class="cite xref">HERMES</a>]</span> is a public implementation selected as an initial
+interoperability counterpart. This guide does not claim that a survey
+has established it to be the only SATP implementation, or that a
+particular release implements every requirement of the baseline.
+The referenced snapshot is evidence for the compatibility investigation,
+not a validated compatibility declaration.<a href="#section-9.1-1" class="pilcrow">¶</a></p>
+<p id="section-9.1-2">The independent peer described here is a proposed implementation.
+This revision assigns no repository or release to it, and reports no
+completed protocol or interoperability test run. The procedures in
+this guide describe how to conduct and report future experiments.<a href="#section-9.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="development-environment">
+<section id="section-9.2">
+        <h3 id="name-language-and-development-en">
+<a href="#section-9.2" class="section-number selfRef">9.2. </a><a href="#name-language-and-development-en" class="section-name selfRef">Language and Development Environment</a>
+        </h3>
+<p id="section-9.2-1">Go is a practical initial target for the proposed peer: explicit data
+types, the standard HTTP and cryptographic libraries, a small executable,
+and built-in testing support suit a controlled gateway and test driver.
+Connect-Go <span>[<a href="#CONNECT" class="cite xref">CONNECT</a>]</span> provides a way to exercise native gRPC and
+gRPC-Web while retaining an explicit choice of mapping. This is an
+engineering choice for the experiment, not a language requirement for
+SATP. Framework version and default protocol selection should be pinned.<a href="#section-9.2-1" class="pilcrow">¶</a></p>
+<p id="section-9.2-2">A minimal repository can separate the Core engine, codecs, transports,
+network adapters, journal, Setup and Registry modules, fixtures, and
+command-line test driver. Protobuf generation can use protoc or Buf with fixed
+generator versions. The initial deployment can run on Linux or WSL2 and
+use Docker Compose to start the counterpart and mock networks. It need
+not introduce Kubernetes, multiple production ledgers, or a large
+workflow framework.<a href="#section-9.2-2" class="pilcrow">¶</a></p>
+<p id="section-9.2-3">Python is also a reasonable option when the team is substantially more
+experienced with it, particularly for scenario modeling. Choosing a
+native gRPC library is not sufficient to establish compatibility with a
+gRPC-Web counterpart. The same signed-message feasibility check and
+role matrix should precede a larger Python implementation.<a href="#section-9.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="development-gates">
+<section id="section-9.3">
+        <h3 id="name-incremental-development-gat">
+<a href="#section-9.3" class="section-number selfRef">9.3. </a><a href="#name-incremental-development-gat" class="section-name selfRef">Incremental Development Gates</a>
+        </h3>
+<ol start="1" type="1" class="normal type-1" id="section-9.3-1">
+<li id="section-9.3-1.1">
+            <p id="section-9.3-1.1.1">Capture the baseline and counterpart contract: specification
+revisions, commit, schemas, paths, credentials, protected content,
+and expected message semantics.<a href="#section-9.3-1.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-9.3-1.2">
+            <p id="section-9.3-1.2.1">Exchange one protected message and response across languages.
+Compare signed bytes and verify signatures and hashes. Include a
+negative case before expanding the protocol implementation.<a href="#section-9.3-1.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-9.3-1.3">
+            <p id="section-9.3-1.3.1">Implement the Core engine and mock networks. Exercise success,
+rejection, and irreversible-operation boundaries without depending
+on a remote gateway.<a href="#section-9.3-1.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-9.3-1.4">
+            <p id="section-9.3-1.4.1">Run both roles against the counterpart, keeping HTTP conformance
+and Hermes compatibility results separate.<a href="#section-9.3-1.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li id="section-9.3-1.5">
+            <p id="section-9.3-1.5.1">Add Setup entry checks and a pre-populated Registry; then add
+registry version, signature, and archive scenarios.<a href="#section-9.3-1.5.1" class="pilcrow">¶</a></p>
+</li>
+        </ol>
+<p id="section-9.3-2">Each gate should produce reviewable fixtures, traces, and a coverage
+report. Tests that depend on unresolved choices can remain INCONCLUSIVE
+while unaffected cases proceed. A complete production gateway is not a
+prerequisite for providing useful feedback to the working group.<a href="#section-9.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="reproducibility">
+<section id="section-9.4">
+        <h3 id="name-reproducibility-and-revisio">
+<a href="#section-9.4" class="section-number selfRef">9.4. </a><a href="#name-reproducibility-and-revisio" class="section-name selfRef">Reproducibility and Revision Tracking</a>
+        </h3>
+<p id="section-9.4-1">Publish implementation commits, build instructions, fixture versions,
+container digests when used, public test credentials, and the manifest
+needed to repeat an experiment. Live private credentials and production
+data do not belong in that package. A counterpart update should trigger
+a documented comparison of schemas, protected bytes, and required
+behavior rather than an unreviewed change to expected outputs.<a href="#section-9.4-1" class="pilcrow">¶</a></p>
+<p id="section-9.4-2">The guide should track every substantive source change to affected
+implementation modules and tests. Changes to extensions should not
+silently change the Core baseline. An issue log can connect each open
+question to its provisional profile setting and eventual resolution.<a href="#section-9.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="security">
+<section id="section-10">
+      <h2 id="name-security-considerations">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-10-1">The security considerations of the selected specifications continue to
+apply. A test environment should make its trust assumptions explicit;
+limited scope is not a reason to accept unauthenticated or tampered
+messages in a test that claims to validate protection.<a href="#section-10-1" class="pilcrow">¶</a></p>
+<div id="security-identities">
+<section id="section-10.1">
+        <h3 id="name-identity-keys-and-represent">
+<a href="#section-10.1" class="section-number selfRef">10.1. </a><a href="#name-identity-keys-and-represent" class="section-name selfRef">Identity, Keys, and Representation</a>
+        </h3>
+<p id="section-10.1-1">Authenticate gateway and registry endpoints, then separately establish
+the authorized message signer and the meaning of supplied evidence.
+Keep transport authentication, message authentication, asset
+authorization, and ledger proof verification as distinct checks. An
+attacker-controlled key in a syntactically valid JWS should not become
+a trust anchor merely because it verifies that same JWS.<a href="#section-10.1-1" class="pilcrow">¶</a></p>
+<p id="section-10.1-2">Fixtures should identify accepted algorithms and key purposes. Tests
+should reject algorithm substitution, mismatched identities, corrupted
+signatures, and incorrect encoding. Serializing and verifying structured
+content across languages needs an agreed byte contract, particularly
+when a transport adapter changes the representation.<a href="#section-10.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-state">
+<section id="section-10.2">
+        <h3 id="name-state-replay-and-irreversib">
+<a href="#section-10.2" class="section-number selfRef">10.2. </a><a href="#name-state-replay-and-irreversib" class="section-name selfRef">State, Replay, and Irreversible Actions</a>
+        </h3>
+<p id="section-10.2-1">Bind accepted inputs to the expected session, context, role, and state
+using fields and checks supported by the selected mapping. Duplicate
+detection should precede repeated backend effects. A persistent
+operation association helps diagnose whether a response was lost after
+an action, but does not authorize an undefined recovery exchange.<a href="#section-10.2-1" class="pilcrow">¶</a></p>
+<p id="section-10.2-2">Expiry, connection loss, and application abort should not be treated as
+proof that an irreversible operation did not happen. Cleanup should be
+justified by asset state and the selected protocol's abort semantics.
+Unknown outcomes should retain evidence and avoid actions that could
+make value available to both parties.<a href="#section-10.2-2" class="pilcrow">¶</a></p>
+<p id="section-10.2-3">Setup should authenticate the participants and gateway pair associated
+with an asset set. A context substitution or change to a referenced
+TAR should be visible before Core entry. Both gateways should
+validate the context and artefact snapshot used for that entry.<a href="#section-10.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-exposure">
+<section id="section-10.3">
+        <h3 id="name-exposure-and-availability">
+<a href="#section-10.3" class="section-number selfRef">10.3. </a><a href="#name-exposure-and-availability" class="section-name selfRef">Exposure and Availability</a>
+        </h3>
+<p id="section-10.3-1">Treat configured gateway and registry endpoints, artefact content,
+and asset-operation arguments as untrusted input. The controlled
+experiment can use explicit endpoint and operation allowlists. Limit
+decoding depth, message and claim size, signature work, pending
+contexts, and request duration. Registry lookup should not enable
+unrestricted network access or arbitrary code execution.<a href="#section-10.3-1" class="pilcrow">¶</a></p>
+<p id="section-10.3-2">A valid TLS connection or Registry response does not prove that an
+asset exists, belongs to the requester, or has the asserted finality.
+Those checks belong to the relevant network and evidence model.
+Availability or replication of a registry also does not remove the
+need to establish trust in the artefacts it serves.<a href="#section-10.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="privacy">
+<section id="section-11">
+      <h2 id="name-privacy-considerations">
+<a href="#section-11" class="section-number selfRef">11. </a><a href="#name-privacy-considerations" class="section-name selfRef">Privacy Considerations</a>
+      </h2>
+<p id="section-11-1">Tests should use synthetic identities and asset data. Logs should record
+identifiers and evidence sufficient for diagnosis while minimizing
+sensitive payloads. Published traces should omit tokens, private keys,
+personal data, and restricted artefact content. An append-only history
+requires particular care because later archive does not erase earlier
+data.<a href="#section-11-1" class="pilcrow">¶</a></p>
+<p id="section-11-2">The PII scenario in revision -02 should be treated as an application
+and policy integration example. This guide does not add a mandatory
+<code>compliancePayload</code>, a universal Travel Rule schema, or a regulatory
+compliance claim to Core. If a deployment uses JWE <span>[<a href="#RFC7516" class="cite xref">RFC7516</a>]</span>, it should
+identify recipients, key handling, protected content, and authorization
+independently of the Core transfer exchange. Encryption alone does not
+establish permission to disclose or retain data.<a href="#section-11-2" class="pilcrow">¶</a></p>
+<p id="section-11-3">Registry access and failure diagnostics should disclose only the
+artefact information authorized for the caller. A valid signature
+does not by itself grant permission to retrieve sensitive metadata.<a href="#section-11-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana">
+<section id="section-12">
+      <h2 id="name-iana-considerations">
+<a href="#section-12" class="section-number selfRef">12. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-12-1">This document requests no IANA action. Example profile names, local
+operation names, manifest fields, and report statuses are not registered
+SATP identifiers or protocol code points.<a href="#section-12-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-13">
+      <h2 id="name-informative-references">
+<a href="#section-13" class="section-number selfRef">13. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+      </h2>
+<dl class="references">
+<dt id="CONNECT">[CONNECT]</dt>
+      <dd>
+<span class="refAuthor">The Connect Authors</span>, <span class="refTitle">"Connect for Go - gRPC compatibility"</span>, <span>n.d.</span>, <span>&lt;<a href="https://connectrpc.com/docs/go/grpc-compatibility/">https://connectrpc.com/docs/go/grpc-compatibility/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="GRPC-RETRY">[GRPC-RETRY]</dt>
+      <dd>
+<span class="refAuthor">The gRPC Authors</span>, <span class="refTitle">"gRPC Retry"</span>, <span>n.d.</span>, <span>&lt;<a href="https://grpc.io/docs/guides/retry/">https://grpc.io/docs/guides/retry/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="HERMES">[HERMES]</dt>
+      <dd>
+<span class="refAuthor">Hyperledger Cacti contributors</span>, <span class="refTitle">"Hyperledger Cacti SATP Hermes source code"</span>, <time datetime="2026-10-28" class="refDate">28 October 2026</time>, <span>&lt;<a href="https://github.com/hyperledger-cacti/cacti/tree/768916ca4b0819bb8febaeb1806339f9f1b38124/packages/cactus-plugin-satp-hermes">https://github.com/hyperledger-cacti/cacti/tree/768916ca4b0819bb8febaeb1806339f9f1b38124/packages/cactus-plugin-satp-hermes</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PROTO-SERIALIZATION">[PROTO-SERIALIZATION]</dt>
+      <dd>
+<span class="refAuthor">Protocol Buffers Authors</span>, <span class="refTitle">"Proto Serialization Is Not Canonical"</span>, <span>n.d.</span>, <span>&lt;<a href="https://protobuf.dev/programming-guides/serialization-not-canonical/">https://protobuf.dev/programming-guides/serialization-not-canonical/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="REGISTRY">[REGISTRY]</dt>
+      <dd>
+<span class="refAuthor">Avrilionis, D.</span> and <span class="refAuthor">T. Hardjono</span>, <span class="refTitle">"Artefacts Registry"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-avrilionis-satp-artefacts-registry-01</span>, <time datetime="2026-09-23" class="refDate">23 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-avrilionis-satp-artefacts-registry-01">https://datatracker.ietf.org/doc/html/draft-avrilionis-satp-artefacts-registry-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7515">[RFC7515]</dt>
+      <dd>
+<span class="refAuthor">Jones, M.</span>, <span class="refAuthor">Bradley, J.</span>, and <span class="refAuthor">N. Sakimura</span>, <span class="refTitle">"JSON Web Signature (JWS)"</span>, <span class="seriesInfo">RFC 7515</span>, <span class="seriesInfo">DOI 10.17487/RFC7515</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7515">https://www.rfc-editor.org/rfc/rfc7515</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7516">[RFC7516]</dt>
+      <dd>
+<span class="refAuthor">Jones, M.</span> and <span class="refAuthor">J. Hildebrand</span>, <span class="refTitle">"JSON Web Encryption (JWE)"</span>, <span class="seriesInfo">RFC 7516</span>, <span class="seriesInfo">DOI 10.17487/RFC7516</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7516">https://www.rfc-editor.org/rfc/rfc7516</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC7518">[RFC7518]</dt>
+      <dd>
+<span class="refAuthor">Jones, M.</span>, <span class="refTitle">"JSON Web Algorithms (JWA)"</span>, <span class="seriesInfo">RFC 7518</span>, <span class="seriesInfo">DOI 10.17487/RFC7518</span>, <time datetime="2015-05" class="refDate">May 2015</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc7518">https://www.rfc-editor.org/rfc/rfc7518</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8259">[RFC8259]</dt>
+      <dd>
+<span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8259">https://www.rfc-editor.org/rfc/rfc8259</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8446">[RFC8446]</dt>
+      <dd>
+<span class="refAuthor">Rescorla, E.</span>, <span class="refTitle">"The Transport Layer Security (TLS) Protocol Version 1.3"</span>, <span class="seriesInfo">RFC 8446</span>, <span class="seriesInfo">DOI 10.17487/RFC8446</span>, <time datetime="2018-08" class="refDate">August 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8446">https://www.rfc-editor.org/rfc/rfc8446</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8785">[RFC8785]</dt>
+      <dd>
+<span class="refAuthor">Rundgren, A.</span>, <span class="refAuthor">Jordan, B.</span>, and <span class="refAuthor">S. Erdtman</span>, <span class="refTitle">"JSON Canonicalization Scheme (JCS)"</span>, <span class="seriesInfo">RFC 8785</span>, <span class="seriesInfo">DOI 10.17487/RFC8785</span>, <time datetime="2020-06" class="refDate">June 2020</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8785">https://www.rfc-editor.org/rfc/rfc8785</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9457">[RFC9457]</dt>
+      <dd>
+<span class="refAuthor">Nottingham, M.</span>, <span class="refAuthor">Wilde, E.</span>, and <span class="refAuthor">S. Dalal</span>, <span class="refTitle">"Problem Details for HTTP APIs"</span>, <span class="seriesInfo">RFC 9457</span>, <span class="seriesInfo">DOI 10.17487/RFC9457</span>, <time datetime="2023-07" class="refDate">July 2023</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9457">https://www.rfc-editor.org/rfc/rfc9457</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SATarch">[SATarch]</dt>
+      <dd>
+<span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Smith, N.</span>, and <span class="refAuthor">V. Ramakrishna</span>, <span class="refTitle">"Secure Asset Transfer (SAT) Interoperability Architecture"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-satp-architecture-10</span>, <time datetime="2026-09-15" class="refDate">15 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-satp-architecture-10">https://datatracker.ietf.org/doc/html/draft-ietf-satp-architecture-10</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SATcore">[SATcore]</dt>
+      <dd>
+<span class="refAuthor">Hargreaves, M.</span>, <span class="refAuthor">Hardjono, T.</span>, <span class="refAuthor">Belchior, R.</span>, <span class="refAuthor">Ramakrishna, V.</span>, and <span class="refAuthor">A. Chiriac</span>, <span class="refTitle">"Secure Asset Transfer Protocol (SATP) Core"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-satp-core-17</span>, <time datetime="2026-09-25" class="refDate">25 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-satp-core-17">https://datatracker.ietf.org/doc/html/draft-ietf-satp-core-17</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="SETUP">[SETUP]</dt>
+      <dd>
+<span class="refAuthor">Avrilionis, D.</span> and <span class="refAuthor">T. Hardjono</span>, <span class="refTitle">"SATP Setup Stage"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-avrilionis-satp-setup-stage-05</span>, <time datetime="2026-09-23" class="refDate">23 September 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-avrilionis-satp-setup-stage-05">https://datatracker.ietf.org/doc/html/draft-avrilionis-satp-setup-stage-05</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="TRANSPORT-DISCUSSION">[TRANSPORT-DISCUSSION]</dt>
+    <dd>
+<span class="refAuthor">Hardjono, T.</span>, <span class="refTitle">"Question about citing non-IETF specifications (action items from Interim WG meeting)"</span>, <time datetime="2026-10-19" class="refDate">19 October 2026</time>, <span>&lt;<a href="https://mailarchive.ietf.org/arch/msg/sat/qY1ulLiPlwXrdana51YBTW3irv4/">https://mailarchive.ietf.org/arch/msg/sat/qY1ulLiPlwXrdana51YBTW3irv4/</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="outstanding-work">
+<section id="appendix-A">
+      <h2 id="name-items-for-subsequent-revisi">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-items-for-subsequent-revisi" class="section-name selfRef">Items for Subsequent Revisions</a>
+      </h2>
+<p id="appendix-A-1">This section is editorial material and can be removed before publication
+as an RFC.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+<p id="appendix-A-2">The following items remain open rather than being completed by this
+revision:<a href="#appendix-A-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A-3.1">
+          <p id="appendix-A-3.1.1">Reconcile this guide with the next published Core transport treatment
+and any resulting standard bindings.<a href="#appendix-A-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.2">
+          <p id="appendix-A-3.2.1">Resolve the Core naming, serialization, hash, and abort questions in
+<a href="#core-clarifications" class="auto internal xref">Section 4.4</a> through the working group.<a href="#appendix-A-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.3">
+          <p id="appendix-A-3.3.1">Publish the independent implementation and complete protected-message
+fixtures after the cross-language feasibility check.<a href="#appendix-A-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.4">
+          <p id="appendix-A-3.4.1">Add observed both-role results, including counterpart feature limits
+and unresolved failures.<a href="#appendix-A-3.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.5">
+          <p id="appendix-A-3.5.1">Clarify Setup wire contracts, authenticated binding and expiry, and
+Registry routes, error mappings, and version selection with the
+respective draft authors.<a href="#appendix-A-3.5.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.6">
+          <p id="appendix-A-3.6.1">Consider Views and Data Sharing guidance in a later revision.<a href="#appendix-A-3.6.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="appendix-A-3.7">
+          <p id="appendix-A-3.7.1">Add real-network evidence adapters only with explicit finality and
+authorization assumptions and separately reported results.<a href="#appendix-A-3.7.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-B">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-B-1">The authors thank the SATP working group and implementation contributors
+for discussions that motivate independent implementations and
+reproducible interoperability testing.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-C">
+      <h2 id="name-authors-addresses">
+<a href="#name-authors-addresses" class="section-name selfRef">Authors' Addresses</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Hyojin Song</span></div>
+<div dir="auto" class="left"><span class="org">Seoul National Univ.</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:fun@snu.ac.kr" class="email">fun@snu.ac.kr</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Yong-Geun Hong</span></div>
+<div dir="auto" class="left"><span class="org">Daejeon Univ.</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:yonggeun.hong@gmail.com" class="email">yonggeun.hong@gmail.com</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">GukSik Jeong</span></div>
+<div dir="auto" class="left"><span class="org">TTA</span></div>
+<div dir="auto" class="left"><span class="country-name">South Korea</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:jgsigi@tta.or.kr" class="email">jgsigi@tta.or.kr</a>
+</div>
+</address>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Thomas Hardjono</span></div>
+<div dir="auto" class="left"><span class="org">MIT</span></div>
+<div dir="auto" class="left"><span class="country-name">United States of America</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:hardjono@mit.edu" class="email">hardjono@mit.edu</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
