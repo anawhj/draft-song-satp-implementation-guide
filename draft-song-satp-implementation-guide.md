@@ -1,18 +1,15 @@
 ---
+# RFCXML v3 source; native v3 tables, lists and inline code avoid
+# deprecated XML elements in the kramdown-rfc output.
+# Build submission XML and remove kramdown-generated line PIs:
+# kramdown-rfc --v3 draft-song-satp-implementation-guide-03.md |
+#   sed -E 's/<\?line[[:space:]][^?]*\?>//g' > draft-song-satp-implementation-guide-03.xml
 stand_alone: yes
 pi:
-  rfcedstyle: yes
   toc: yes
-  tocindent: yes
   tocdepth: 4
   sortrefs: yes
   symrefs: yes
-  strict: yes
-  comments: yes
-  inline: yes
-  text-list-symbols: o-*+
-  compact: yes
-  subcompact: no
 
 title: Secure Asset Transfer Protocol (SATP) Implementation Guide
 abbrev: SATP Implementation Guide
@@ -23,7 +20,6 @@ area: Applications and Real-Time
 workgroup: Secure Asset Transfer Protocol
 date: 2 Nov 2026
 v: 3
-stream: IETF
 keyword:
  - Gateway
  - Digital asset network
@@ -339,12 +335,32 @@ termination or automatic recovery after every possible failure.
 The following revisions form the documentary baseline for this draft.
 The section numbers cited in this guide refer to these revisions.
 
-| Subject | Baseline |
-|:---|:---|
-| Core | draft-ietf-satp-core-17 |
-| Architecture | draft-ietf-satp-architecture-10 |
-| Setup | draft-avrilionis-satp-setup-stage-05 |
-| Registry | draft-avrilionis-satp-artefacts-registry-01 |
+<table markdown="0">
+<thead>
+<tr>
+<th align="left">Subject</th>
+<th align="left">Baseline</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Core</td>
+<td align="left">draft-ietf-satp-core-17</td>
+</tr>
+<tr>
+<td align="left">Architecture</td>
+<td align="left">draft-ietf-satp-architecture-10</td>
+</tr>
+<tr>
+<td align="left">Setup</td>
+<td align="left">draft-avrilionis-satp-setup-stage-05</td>
+</tr>
+<tr>
+<td align="left">Registry</td>
+<td align="left">draft-avrilionis-satp-artefacts-registry-01</td>
+</tr>
+</tbody>
+</table>
 
 Core revision -17 specifies an HTTPS and JSON baseline. The October 2026
 discussion in {{TRANSPORT-DISCUSSION}} proposes separating transport
@@ -374,21 +390,23 @@ perform either role in different transfers.
 
 The following terms describe the test environment:
 
-* Independent peer: an implementation whose protocol decisions are
-  developed from the specification independently of the counterpart's
-  state-machine code. A different programming language alone does not
-  establish this independence.
-* Test harness: the driver that supplies inputs, injects failures,
-  observes peer and backend effects, and evaluates expected outcomes.
-* Test profile: a versioned, locally named configuration of specification
-  revisions, supported features, transport, and security choices. This
-  guide does not register profile names or a discovery format.
-* Ledger adapter: the boundary between a gateway's protocol processing
-  and the represented network's asset operations and evidence.
-* Journal: the local record of accepted inputs, protocol decisions,
-  backend operation identifiers, and observed outcomes.
-* Inconclusive outcome: a result for which available evidence cannot
-  establish the expected decision or backend effect.
+<ul markdown="0">
+<li><t>Independent peer: an implementation whose protocol decisions are
+developed from the specification independently of the counterpart's
+state-machine code. A different programming language alone does not
+establish this independence.</t></li>
+<li><t>Test harness: the driver that supplies inputs, injects failures,
+observes peer and backend effects, and evaluates expected outcomes.</t></li>
+<li><t>Test profile: a versioned, locally named configuration of specification
+revisions, supported features, transport, and security choices. This
+guide does not register profile names or a discovery format.</t></li>
+<li><t>Ledger adapter: the boundary between a gateway's protocol processing
+and the represented network's asset operations and evidence.</t></li>
+<li><t>Journal: the local record of accepted inputs, protocol decisions,
+backend operation identifiers, and observed outcomes.</t></li>
+<li><t>Inconclusive outcome: a result for which available evidence cannot
+establish the expected decision or backend effect.</t></li>
+</ul>
 
 The Transfer Context (TC), TCID, Tokenized Asset or Artefact Record
 (TAR), and Digitized Asset Record (DAR) are used in the context of
@@ -402,15 +420,44 @@ The Transfer Context (TC), TCID, Tokenized Asset or Artefact Record
 A small implementation can use the following components without adopting
 a large gateway framework.
 
-| Component | Responsibility |
-|:---|:---|
-| Core engine | Validate permitted transitions and decide protocol actions. |
-| Codec and protection | Decode messages, verify signatures and hashes, and encode outputs. |
-| Transport adapter | Map delivery, responses, metadata, and errors to a selected transport. |
-| Ledger adapter | Execute and observe network-specific asset operations. |
-| Context and journal store | Preserve transfer associations, decisions, and operation evidence. |
-| Preparation modules | Provide Setup orchestration and Registry access. |
-| Test harness | Drive independent peers and evaluate protocol and asset effects. |
+<table markdown="0">
+<thead>
+<tr>
+<th align="left">Component</th>
+<th align="left">Responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Core engine</td>
+<td align="left">Validate permitted transitions and decide protocol actions.</td>
+</tr>
+<tr>
+<td align="left">Codec and protection</td>
+<td align="left">Decode messages, verify signatures and hashes, and encode outputs.</td>
+</tr>
+<tr>
+<td align="left">Transport adapter</td>
+<td align="left">Map delivery, responses, metadata, and errors to a selected transport.</td>
+</tr>
+<tr>
+<td align="left">Ledger adapter</td>
+<td align="left">Execute and observe network-specific asset operations.</td>
+</tr>
+<tr>
+<td align="left">Context and journal store</td>
+<td align="left">Preserve transfer associations, decisions, and operation evidence.</td>
+</tr>
+<tr>
+<td align="left">Preparation modules</td>
+<td align="left">Provide Setup orchestration and Registry access.</td>
+</tr>
+<tr>
+<td align="left">Test harness</td>
+<td align="left">Drive independent peers and evaluate protocol and asset effects.</td>
+</tr>
+</tbody>
+</table>
 
 The Core engine should not depend on a particular HTTP handler or RPC
 framework. A useful local API accepts validated input and current state,
@@ -458,22 +505,24 @@ below. Full message schemas and required fields remain defined by
 
 The following sequence summarizes Sections 8 through 10 of {{SATcore}}.
 Message names are suffixes of the namespace
-`urn:ietf:params:satp:core:msgtype:`. The state observations are test
+<tt>urn:ietf:params:satp:core:msgtype:</tt>. The state observations are test
 boundaries rather than new wire states.
 
-1. Stage 1 exchanges `transfer-proposal-msg`, `proposal-receipt-msg`,
-   `transfer-commence-msg`, and `ack-commence-msg`, alternating between
-   G1 and G2. The peers establish the proposed transfer and its
-   commencement.
-2. Stage 2 sends `lock-assert-msg` from G1 after the source lock. G2
-   validates the claim, records it in NW2 as depicted in Core Figure 2,
-   and returns `assertion-receipt-msg`.
-3. Stage 3 sends `commit-prepare-msg` from G1. G2 creates the destination
-   asset under its own control and sends `commit-ready-msg`.
-4. G1 extinguishes the source asset and sends `commit-final-msg` with
-   the relevant evidence. G2 verifies it, assigns the destination asset
-   to the beneficiary, and returns `ack-commit-final-msg`.
-5. G1 records completion and sends `commit-transfer-complete-msg` to G2.
+<ol markdown="0">
+<li><t>Stage 1 exchanges <tt>transfer-proposal-msg</tt>, <tt>proposal-receipt-msg</tt>,
+<tt>transfer-commence-msg</tt>, and <tt>ack-commence-msg</tt>, alternating between
+G1 and G2. The peers establish the proposed transfer and its
+commencement.</t></li>
+<li><t>Stage 2 sends <tt>lock-assert-msg</tt> from G1 after the source lock. G2
+validates the claim, records it in NW2 as depicted in Core Figure 2,
+and returns <tt>assertion-receipt-msg</tt>.</t></li>
+<li><t>Stage 3 sends <tt>commit-prepare-msg</tt> from G1. G2 creates the destination
+asset under its own control and sends <tt>commit-ready-msg</tt>.</t></li>
+<li><t>G1 extinguishes the source asset and sends <tt>commit-final-msg</tt> with
+the relevant evidence. G2 verifies it, assigns the destination asset
+to the beneficiary, and returns <tt>ack-commit-final-msg</tt>.</t></li>
+<li><t>G1 records completion and sends <tt>commit-transfer-complete-msg</tt> to G2.</t></li>
+</ol>
 
 The implementation should compare this sequence against the normative
 field descriptions, not copy draft examples without checking them.
@@ -513,7 +562,7 @@ Core error handling should follow Sections 10.6, 10.7, and 11 of
 {{SATcore}}. Protocol failure, an application-requested abort, and a
 connection failure are distinct events. For the -17 HTTP baseline,
 Section 11.3 describes error representations using
-`application/problem+json` and {{RFC9457}}, with SATP-specific information.
+<tt>application/problem+json</tt> and {{RFC9457}}, with SATP-specific information.
 These should not be replaced by invented private Core error codes.
 
 An abort ends the session exchange, but its effect on assets depends on
@@ -537,10 +586,10 @@ does not create a retransmission protocol absent from the baseline.
 ## Clarifications to Track {#core-clarifications}
 
 Revision -17 contains points that independent implementations should
-raise for clarification. These include the `ack-prepare-msg` entry in
-Section 5.3.2 versus `commit-ready-msg` in Section 10.2, and
-`mintAssertionFormat` in a field description versus
-`mintAssertionClaimFormat` in an example. Example syntax and spelling
+raise for clarification. These include the <tt>ack-prepare-msg</tt> entry in
+Section 5.3.2 versus <tt>commit-ready-msg</tt> in Section 10.2, and
+<tt>mintAssertionFormat</tt> in a field description versus
+<tt>mintAssertionClaimFormat</tt> in an example. Example syntax and spelling
 also need validation before becoming fixtures.
 
 The exact serialization and hash boundary, and the interaction between
@@ -557,7 +606,7 @@ in their result.
 
 For Core revision -17, the HTTP adapter should exercise the specified
 HTTPS POST, TLS 1.3 {{RFC8446}}, JSON {{RFC8259}}, and
-`application/satp+json` behavior, while
+<tt>application/satp+json</tt> behavior, while
 handling the error representation described in {{core-failures}}.
 It should retain the distinction between transport delivery, protocol
 acceptance, and completion of a backend operation.
@@ -580,19 +629,19 @@ call also does not roll back a backend operation already performed.
 Native gRPC, gRPC-Web, and Connect are different protocol mappings.
 Native gRPC normally uses HTTP/2; an HTTP/1.1 gRPC-Web endpoint is not
 interchangeable with it. The inspected {{HERMES}} snapshot constructs
-gRPC-Web transports for the Core stages in `gateway-orchestrator.ts`.
+gRPC-Web transports for the Core stages in <tt>gateway-orchestrator.ts</tt>.
 The adapter should match the actual counterpart's endpoints and protocol.
 That observation is not a claim that Hermes defines the standard binding.
 
 The harness should distinguish a Hermes compatibility test from a Core
 -17 HTTP conformance test. It can share the same domain engine, while
 the compatibility adapter records the counterpart's schema, paths,
-metadata, and serialization. Using a supplied `.proto` file is permitted
+metadata, and serialization. Using a supplied <tt>.proto</tt> file is permitted
 for interoperability, but adopting its state-machine implementation
 would weaken the independence of the test peer.
 
-The inspected Hermes `jws-interceptors.ts` signs Protobuf binary content
-and carries the JWS in the `satp-signature` header. Cross-language
+The inspected Hermes <tt>jws-interceptors.ts</tt> signs Protobuf binary content
+and carries the JWS in the <tt>satp-signature</tt> header. Cross-language
 fixtures should therefore establish the exact signed bytes before a
 full transfer is attempted. {{PROTO-SERIALIZATION}} explains why
 deterministic Protobuf output is not a canonical representation across
@@ -631,12 +680,14 @@ not additional standardized messages or endpoint definitions.
 
 A useful local model separates four identifiers:
 
-* TCID identifies the transfer context linking the transfer intent,
-  participants, assets, and gateways.
-* Session ID identifies a particular Core execution associated with that
-  context.
-* TAR ID references information held by an Artefacts Registry.
-* DAR ID identifies an asset record managed by the represented network.
+<ul markdown="0">
+<li><t>TCID identifies the transfer context linking the transfer intent,
+participants, assets, and gateways.</t></li>
+<li><t>Session ID identifies a particular Core execution associated with that
+context.</t></li>
+<li><t>TAR ID references information held by an Artefacts Registry.</t></li>
+<li><t>DAR ID identifies an asset record managed by the represented network.</t></li>
+</ul>
 
 These identifiers should have separate fields and validation rules. A TAR
 reference does not replace the source network's DAR ownership and transfer
@@ -661,14 +712,40 @@ Some operations belong to applications or network adapters rather than
 to a gateway service; a test driver can coordinate them without changing
 the responsibilities described in {{SETUP}}.
 
-| Suggested operation | Local responsibility |
-|:---|:---|
-| CreateTC | Record transfer intent and return a TCID. |
-| BindAssets | Associate authorized source DARs with that TCID. |
-| PrepareReceive | Record the beneficiary and destination preparation. |
-| BindGateways | Authenticate and record the gateway pair for the TC. |
-| BeginTransfer | Check all prerequisites and associate a Core session. |
-| QueryStatus | Return observed Setup and Core progress with evidence. |
+<table markdown="0">
+<thead>
+<tr>
+<th align="left">Suggested operation</th>
+<th align="left">Local responsibility</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">CreateTC</td>
+<td align="left">Record transfer intent and return a TCID.</td>
+</tr>
+<tr>
+<td align="left">BindAssets</td>
+<td align="left">Associate authorized source DARs with that TCID.</td>
+</tr>
+<tr>
+<td align="left">PrepareReceive</td>
+<td align="left">Record the beneficiary and destination preparation.</td>
+</tr>
+<tr>
+<td align="left">BindGateways</td>
+<td align="left">Authenticate and record the gateway pair for the TC.</td>
+</tr>
+<tr>
+<td align="left">BeginTransfer</td>
+<td align="left">Check all prerequisites and associate a Core session.</td>
+</tr>
+<tr>
+<td align="left">QueryStatus</td>
+<td align="left">Return observed Setup and Core progress with evidence.</td>
+</tr>
+</tbody>
+</table>
 
 A concrete experimental profile should specify who can invoke each
 operation, what constitutes successful completion, how duplicates are
@@ -829,11 +906,28 @@ is not evidence of a passing version-transition test.
 An experiment should distinguish the following assessments. Passing one
 does not establish the others.
 
-| Assessment | Question |
-|:---|:---|
-| Specification conformance | Does the observed behavior satisfy an identified requirement in the selected revision? |
-| Counterpart interoperability | Can independently developed peers complete the agreed exchange and reject invalid input appropriately? |
-| Extension experiment | Does a separately documented experimental mapping behave as intended? |
+<table markdown="0">
+<thead>
+<tr>
+<th align="left">Assessment</th>
+<th align="left">Question</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Specification conformance</td>
+<td align="left">Does the observed behavior satisfy an identified requirement in the selected revision?</td>
+</tr>
+<tr>
+<td align="left">Counterpart interoperability</td>
+<td align="left">Can independently developed peers complete the agreed exchange and reject invalid input appropriately?</td>
+</tr>
+<tr>
+<td align="left">Extension experiment</td>
+<td align="left">Does a separately documented experimental mapping behave as intended?</td>
+</tr>
+</tbody>
+</table>
 
 The profile should identify its scope without claiming an IETF
 certification. A Hermes compatibility profile can be useful even if its
@@ -875,14 +969,40 @@ one aggregate pass percentage is insufficient to describe interoperability.
 The following groups provide an initial test inventory. They are
 recommended coverage, not additional SATP conformance requirements.
 
-| Group | Representative cases |
-|:---|:---|
-| Schema and encoding | Missing or malformed fields, unsupported versions, numeric and Unicode boundaries. |
-| Protection | Wrong signing key, altered content, bad claim proof, incorrect hash input. |
-| Core decisions | Successful flow, invalid ordering, wrong session, protocol error, application abort. |
-| Network effects | Repeated lock, repeated creation or assignment, backend rejection, conflicting transfers. |
-| Delivery and restart | Lost response, duplicate input, disconnect, crash around an irreversible action. |
-| Setup and Registry | Missing prerequisite, mismatched context, changed TAR version, unauthorized update. |
+<table markdown="0">
+<thead>
+<tr>
+<th align="left">Group</th>
+<th align="left">Representative cases</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Schema and encoding</td>
+<td align="left">Missing or malformed fields, unsupported versions, numeric and Unicode boundaries.</td>
+</tr>
+<tr>
+<td align="left">Protection</td>
+<td align="left">Wrong signing key, altered content, bad claim proof, incorrect hash input.</td>
+</tr>
+<tr>
+<td align="left">Core decisions</td>
+<td align="left">Successful flow, invalid ordering, wrong session, protocol error, application abort.</td>
+</tr>
+<tr>
+<td align="left">Network effects</td>
+<td align="left">Repeated lock, repeated creation or assignment, backend rejection, conflicting transfers.</td>
+</tr>
+<tr>
+<td align="left">Delivery and restart</td>
+<td align="left">Lost response, duplicate input, disconnect, crash around an irreversible action.</td>
+</tr>
+<tr>
+<td align="left">Setup and Registry</td>
+<td align="left">Missing prerequisite, mismatched context, changed TAR version, unauthorized update.</td>
+</tr>
+</tbody>
+</table>
 
 Each delivery failure should be injected at a named boundary: before
 receipt, after validation, after backend execution, or after persistence
@@ -959,19 +1079,21 @@ role matrix should precede a larger Python implementation.
 
 ## Incremental Development Gates {#development-gates}
 
-1. Capture the baseline and counterpart contract: specification
-   revisions, commit, schemas, paths, credentials, protected content,
-   and expected message semantics.
-2. Exchange one protected message and response across languages.
-   Compare signed bytes and verify signatures and hashes. Include a
-   negative case before expanding the protocol implementation.
-3. Implement the Core engine and mock networks. Exercise success,
-   rejection, and irreversible-operation boundaries without depending
-   on a remote gateway.
-4. Run both roles against the counterpart, keeping HTTP conformance
-   and Hermes compatibility results separate.
-5. Add Setup entry checks and a pre-populated Registry; then add
-   registry version, signature, and archive scenarios.
+<ol markdown="0">
+<li><t>Capture the baseline and counterpart contract: specification
+revisions, commit, schemas, paths, credentials, protected content,
+and expected message semantics.</t></li>
+<li><t>Exchange one protected message and response across languages.
+Compare signed bytes and verify signatures and hashes. Include a
+negative case before expanding the protocol implementation.</t></li>
+<li><t>Implement the Core engine and mock networks. Exercise success,
+rejection, and irreversible-operation boundaries without depending
+on a remote gateway.</t></li>
+<li><t>Run both roles against the counterpart, keeping HTTP conformance
+and Hermes compatibility results separate.</t></li>
+<li><t>Add Setup entry checks and a pre-populated Registry; then add
+registry version, signature, and archive scenarios.</t></li>
+</ol>
 
 Each gate should produce reviewable fixtures, traces, and a coverage
 report. Tests that depend on unresolved choices can remain INCONCLUSIVE
@@ -1059,7 +1181,7 @@ data.
 
 The PII scenario in revision -02 should be treated as an application
 and policy integration example. This guide does not add a mandatory
-`compliancePayload`, a universal Travel Rule schema, or a regulatory
+<tt>compliancePayload</tt>, a universal Travel Rule schema, or a regulatory
 compliance claim to Core. If a deployment uses JWE {{RFC7516}}, it should
 identify recipients, key handling, protected content, and authorization
 independently of the Core transfer exchange. Encryption alone does not
@@ -1085,20 +1207,22 @@ as an RFC.
 The following items remain open rather than being completed by this
 revision:
 
-* Reconcile this guide with the next published Core transport treatment
-  and any resulting standard bindings.
-* Resolve the Core naming, serialization, hash, and abort questions in
-  {{core-clarifications}} through the working group.
-* Publish the independent implementation and complete protected-message
-  fixtures after the cross-language feasibility check.
-* Add observed both-role results, including counterpart feature limits
-  and unresolved failures.
-* Clarify Setup wire contracts, authenticated binding and expiry, and
-  Registry routes, error mappings, and version selection with the
-  respective draft authors.
-* Consider Views and Data Sharing guidance in a later revision.
-* Add real-network evidence adapters only with explicit finality and
-  authorization assumptions and separately reported results.
+<ul markdown="0">
+<li><t>Reconcile this guide with the next published Core transport treatment
+and any resulting standard bindings.</t></li>
+<li><t>Resolve the Core naming, serialization, hash, and abort questions in
+<xref target="core-clarifications"/> through the working group.</t></li>
+<li><t>Publish the independent implementation and complete protected-message
+fixtures after the cross-language feasibility check.</t></li>
+<li><t>Add observed both-role results, including counterpart feature limits
+and unresolved failures.</t></li>
+<li><t>Clarify Setup wire contracts, authenticated binding and expiry, and
+Registry routes, error mappings, and version selection with the
+respective draft authors.</t></li>
+<li><t>Consider Views and Data Sharing guidance in a later revision.</t></li>
+<li><t>Add real-network evidence adapters only with explicit finality and
+authorization assumptions and separately reported results.</t></li>
+</ul>
 
 # Acknowledgments
 {:numbered="false"}
@@ -1106,4 +1230,3 @@ revision:
 The authors thank the SATP working group and implementation contributors
 for discussions that motivate independent implementations and
 reproducible interoperability testing.
-

@@ -5,7 +5,7 @@
 Secure Asset Transfer Protocol                                   H. Song
 Internet-Draft                                      Seoul National Univ.
 Intended status: Informational                                Y.-G. Hong
-Expires: 6 May 2027                                        Daejeon Univ.
+Expires: 7 May 2027                                        Daejeon Univ.
                                                                 G. Jeong
                                                                      TTA
                                                              T. Hardjono
@@ -390,22 +390,22 @@ Table of Contents
    urn:ietf:params:satp:core:msgtype:. The state observations are test
    boundaries rather than new wire states.
 
-   1.  Stage 1 exchanges transfer-proposal-msg, proposal-receipt-msg,
-       transfer-commence-msg, and ack-commence-msg, alternating between
-       G1 and G2.  The peers establish the proposed transfer and its
-       commencement.
+   1.  Stage 1 exchanges transfer-proposal-msg , proposal-receipt-msg ,
+       transfer-commence-msg , and ack-commence-msg , alternating
+       between G1 and G2.  The peers establish the proposed transfer and
+       its commencement.
 
    2.  Stage 2 sends lock-assert-msg from G1 after the source lock.  G2
        validates the claim, records it in NW2 as depicted in Core
-       Figure 2, and returns assertion-receipt-msg.
+       Figure 2, and returns assertion-receipt-msg .
 
    3.  Stage 3 sends commit-prepare-msg from G1.  G2 creates the
        destination asset under its own control and sends commit-ready-
-       msg.
+       msg .
 
    4.  G1 extinguishes the source asset and sends commit-final-msg with
        the relevant evidence.  G2 verifies it, assigns the destination
-       asset to the beneficiary, and returns ack-commit-final-msg.
+       asset to the beneficiary, and returns ack-commit-final-msg .
 
    5.  G1 records completion and sends commit-transfer-complete-msg to
        G2.
